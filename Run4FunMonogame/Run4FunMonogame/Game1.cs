@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Run4FunMonogame.Sprites;
 using System;
 
 namespace Run4FunMonogame
@@ -12,16 +13,25 @@ namespace Run4FunMonogame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        private Texture2D star;
+        private Texture2D player;
         private KeyboardState keyState;
-        private Vector2 position, velocity;
-        private float speed = 30;
+        private Vector2 position;
+        private int speed = 200;
+
+        private Sprite sprite = new Player();
+
+        private int playerWidth;
+        private int playerHeight;
+
+        private int screenWidth;
+        private int screenHeight;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = 1280;
-            graphics.PreferredBackBufferHeight = 720;
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            Window.AllowUserResizing = true;
 
             Content.RootDirectory = "Content";
         }
@@ -34,10 +44,15 @@ namespace Run4FunMonogame
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             keyState = Keyboard.GetState();
-            position = new Vector2(300, 300);
-            velocity = Vector2.Zero;
+
+            screenWidth = Window.ClientBounds.Width;
+            screenHeight = Window.ClientBounds.Height;
+
+            playerWidth = 100;
+            playerHeight = 100;
+
+            position = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
 
             base.Initialize();
         }
@@ -52,7 +67,7 @@ namespace Run4FunMonogame
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            star = Content.Load<Texture2D>("player");
+            player = Content.Load<Texture2D>("player");
         }
 
         /// <summary>
@@ -62,8 +77,11 @@ namespace Run4FunMonogame
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
-            star.Dispose();
+            player.Dispose();
         }
+
+        bool leftKeyPressed = false;
+        bool rightKeyPressed = false;
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -78,23 +96,26 @@ namespace Run4FunMonogame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
 
-            Console.WriteLine("" + (GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5).ToString());
-
-            Console.WriteLine(GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5);
-
+            // Controller buttons.
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
             bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
             bool leftShoulderPressed = GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed;
 
-            // Move.
-            if (keyState.IsKeyDown(Keys.Up) || triggerLeftPressed && triggerRightPressed && position.Y > 0)
-                position.Y -= speed;
-            else if (keyState.IsKeyDown(Keys.Down) || leftShoulderPressed && position.Y < 650)
-                position.Y += speed;
-            else if (keyState.IsKeyDown(Keys.Left) || triggerLeftPressed && !triggerRightPressed && position.X > 0)
+            if ((triggerLeftPressed || keyState.IsKeyDown(Keys.Left)) && !leftKeyPressed)
+            {
                 position.X -= speed;
-            else if (keyState.IsKeyDown(Keys.Right) || !triggerLeftPressed && triggerRightPressed && position.X < 1150)
+                leftKeyPressed = true;
+            }
+            else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
+                leftKeyPressed = false;
+
+            if ((triggerRightPressed || keyState.IsKeyDown(Keys.Right)) && !rightKeyPressed)
+            {
                 position.X += speed;
+                rightKeyPressed = true;
+            }
+            else if ((!triggerRightPressed && !keyState.IsKeyDown(Keys.Right)) && rightKeyPressed)
+                rightKeyPressed = false;
 
             base.Update(gameTime);
         }
@@ -109,7 +130,7 @@ namespace Run4FunMonogame
 
             // Add drawing code here
             spriteBatch.Begin();
-            spriteBatch.Draw(star, position, Color.White);
+            spriteBatch.Draw(player, position, Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);
