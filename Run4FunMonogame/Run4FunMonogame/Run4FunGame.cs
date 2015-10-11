@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using EV3MessengerLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Run4FunMonogame.Sprites;
@@ -9,7 +10,7 @@ namespace Run4FunMonogame
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class Run4FunGame : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -18,7 +19,9 @@ namespace Run4FunMonogame
         private Vector2 position;
         private int speed = 200;
 
-        private Sprite sprite = new Player();
+        // private Sprite sprite = new Player();
+
+        private const string EV3_SERIAL_PORT = "COM14";
 
         private int playerWidth;
         private int playerHeight;
@@ -26,7 +29,10 @@ namespace Run4FunMonogame
         private int screenWidth;
         private int screenHeight;
 
-        public Game1()
+        // EV3: The EV3Messenger is used to communicate with the Lego EV3
+        private EV3Messenger ev3Messenger;
+
+        public Run4FunGame()
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1920;
@@ -34,6 +40,12 @@ namespace Run4FunMonogame
             Window.AllowUserResizing = true;
 
             Content.RootDirectory = "Content";
+
+            // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
+            ev3Messenger = new EV3Messenger();
+
+            // EV3: Connect to the EV3 serial port over Bluetooth.
+            ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         /// <summary>
@@ -78,6 +90,10 @@ namespace Run4FunMonogame
         {
             // TODO: Unload any non ContentManager content here
             player.Dispose();
+
+            // EV3: Disconnect
+            if (ev3Messenger.IsConnected)
+                ev3Messenger.Disconnect();
         }
 
         bool leftKeyPressed = false;
@@ -96,13 +112,15 @@ namespace Run4FunMonogame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
 
-            // Controller buttons.
+            // Controller triggers.
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
             bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
-            bool leftShoulderPressed = GamePad.GetState(PlayerIndex.One).Buttons.LeftShoulder == ButtonState.Pressed;
 
             if ((triggerLeftPressed || keyState.IsKeyDown(Keys.Left)) && !leftKeyPressed)
             {
+                if (ev3Messenger.IsConnected)
+                    ev3Messenger.SendMessage("Move", "Left");
+            
                 position.X -= speed;
                 leftKeyPressed = true;
             }
@@ -111,6 +129,9 @@ namespace Run4FunMonogame
 
             if ((triggerRightPressed || keyState.IsKeyDown(Keys.Right)) && !rightKeyPressed)
             {
+                if (ev3Messenger.IsConnected)
+                    ev3Messenger.SendMessage("Move", "Right");
+
                 position.X += speed;
                 rightKeyPressed = true;
             }
