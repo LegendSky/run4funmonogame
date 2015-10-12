@@ -116,7 +116,10 @@ namespace Run4FunMonogame
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
             bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
 
-            if ((triggerLeftPressed || keyState.IsKeyDown(Keys.Left)) && !leftKeyPressed)
+            bool leftArrowPressed = keyState.IsKeyDown(Keys.Left);
+            bool rightArrowPressed = keyState.IsKeyDown(Keys.Right);
+
+            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
                     ev3Messenger.SendMessage("Move", "Left");
@@ -127,7 +130,7 @@ namespace Run4FunMonogame
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
                 leftKeyPressed = false;
 
-            if ((triggerRightPressed || keyState.IsKeyDown(Keys.Right)) && !rightKeyPressed)
+            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
                     ev3Messenger.SendMessage("Move", "Right");
@@ -135,7 +138,7 @@ namespace Run4FunMonogame
                 position.X += speed;
                 rightKeyPressed = true;
             }
-            else if ((!triggerRightPressed && !keyState.IsKeyDown(Keys.Right)) && rightKeyPressed)
+            else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
                 rightKeyPressed = false;
 
             base.Update(gameTime);
