@@ -58,3 +58,5 @@ C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Wind
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.dll
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.pdb
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.xml
+C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\Content\bigtile.xnb
+C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\Content\smalltile.xnb
