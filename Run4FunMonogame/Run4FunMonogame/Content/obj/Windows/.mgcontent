@@ -5,5 +5,7 @@
   <Config />
   <SourceFiles>
     <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/player.png</File>
+    <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/bigtile.png</File>
+    <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/smalltile.png</File>
   </SourceFiles>
 </SourceFileCollection>

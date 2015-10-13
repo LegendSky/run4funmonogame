@@ -14,10 +14,17 @@ namespace Run4FunMonogame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
         private Texture2D player;
+        private Texture2D smallTile;
+        private Texture2D bigTile;
+
+        private Vector2 positionPlayer;
+        private Vector2 positionTile;
+
         private KeyboardState keyState;
-        private Vector2 position;
-        private int speed = 200;
+        private const int playerSpeed = 200;
+        private const int tileSpeed = 10;
 
         // private Sprite sprite = new Player();
 
@@ -28,6 +35,10 @@ namespace Run4FunMonogame
 
         private int screenWidth;
         private int screenHeight;
+
+        private const int tileWidth = 230;
+        private const int tileHeight = 500;
+        private int middleTileX;
 
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
@@ -64,7 +75,10 @@ namespace Run4FunMonogame
             playerWidth = 100;
             playerHeight = 100;
 
-            position = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
+            middleTileX = (screenWidth / 2) - (tileWidth / 2);
+
+            positionPlayer = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
+            positionTile = new Vector2(middleTileX, -tileHeight);
 
             base.Initialize();
         }
@@ -80,6 +94,8 @@ namespace Run4FunMonogame
 
             // TODO: use this.Content to load your game content here
             player = Content.Load<Texture2D>("player");
+            smallTile = Content.Load<Texture2D>("smalltile");
+            bigTile = Content.Load<Texture2D>("bigtile");
         }
 
         /// <summary>
@@ -116,27 +132,35 @@ namespace Run4FunMonogame
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
             bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
 
-            if ((triggerLeftPressed || keyState.IsKeyDown(Keys.Left)) && !leftKeyPressed)
+            bool leftArrowPressed = keyState.IsKeyDown(Keys.Left);
+            bool rightArrowPressed = keyState.IsKeyDown(Keys.Right);
+
+            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
                     ev3Messenger.SendMessage("Move", "Left");
-            
-                position.X -= speed;
+
+                positionPlayer.X -= playerSpeed;
                 leftKeyPressed = true;
             }
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
                 leftKeyPressed = false;
 
-            if ((triggerRightPressed || keyState.IsKeyDown(Keys.Right)) && !rightKeyPressed)
+            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
                     ev3Messenger.SendMessage("Move", "Right");
 
-                position.X += speed;
+                positionPlayer.X += playerSpeed;
                 rightKeyPressed = true;
             }
-            else if ((!triggerRightPressed && !keyState.IsKeyDown(Keys.Right)) && rightKeyPressed)
+            else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
                 rightKeyPressed = false;
+
+            if (positionTile.Y > 1080)
+                positionTile.Y = -tileHeight;
+            else
+                positionTile.Y += tileSpeed;
 
             base.Update(gameTime);
         }
@@ -151,10 +175,47 @@ namespace Run4FunMonogame
 
             // Add drawing code here
             spriteBatch.Begin();
-            spriteBatch.Draw(player, position, Color.White);
+
+            spriteBatch.Draw(player, positionPlayer, Color.White);
+            spriteBatch.Draw(smallTile, positionTile, Color.White);
+            spriteBatch.Draw(bigTile, generateTilePosition(), Color.White);
+            spriteBatch.Draw(bigTile, positionTile, Color.White);
+
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private Vector2 generateTilePosition()
+        {
+            Random random = new Random();
+            int randomNumber = random.Next(5);
+            int x;
+            int y;
+            switch (randomNumber)
+            {
+                case 0:
+                    x = middleTileX - (2 * tileWidth);
+                    break;
+                case 1:
+                    x = middleTileX - tileWidth;
+                    break;
+                case 2:
+                    x = middleTileX;
+                    break;
+                case 3:
+                    x = middleTileX + tileWidth;
+                    break;
+                case 4:
+                    x = middleTileX + (2 * tileWidth);
+                    break;
+                default:
+                    x = 0;
+                    break;
+            }
+            y = -random.Next(tileHeight, screenHeight);
+
+            return new Vector2(x, y);
         }
     }
 }
