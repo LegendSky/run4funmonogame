@@ -27,9 +27,6 @@ C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Wind
 C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\SharpDX.Direct3D9.xml
 C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\obj\x86\Debug\Run4FunMonogame.csprojResolveAssemblyReference.cache
 <<<<<<< HEAD
-C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.dll
-C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.pdb
-C:\Users\Corsair\GitHub\run4funmonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.xml
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.dll
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.pdb
 C:\Users\MSI\GitHub\run4funMonogame\Run4FunMonogame\Run4FunMonogame\bin\Windows\Debug\EV3MessengerLib.xml
