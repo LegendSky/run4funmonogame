@@ -21,6 +21,7 @@ namespace Run4FunMonogame
 
         private Vector2 positionPlayer;
         private Vector2 positionTile;
+        private Vector2 positionTileRandom;
 
         private KeyboardState keyState;
         private const int playerSpeed = 200;
@@ -79,6 +80,7 @@ namespace Run4FunMonogame
 
             positionPlayer = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
             positionTile = new Vector2(middleTileX, -tileHeight);
+            positionTileRandom = generateTilePosition();
 
             base.Initialize();
         }
@@ -158,10 +160,15 @@ namespace Run4FunMonogame
                 rightKeyPressed = false;
 
             if (positionTile.Y > 1080)
+            {
                 positionTile.Y = -tileHeight;
+                positionTileRandom.Y = -tileHeight;
+            }
             else
+            {
                 positionTile.Y += tileSpeed;
-
+                positionTileRandom.Y += tileSpeed;
+            }
             base.Update(gameTime);
         }
 
@@ -177,9 +184,9 @@ namespace Run4FunMonogame
             spriteBatch.Begin();
 
             spriteBatch.Draw(player, positionPlayer, Color.White);
-            spriteBatch.Draw(smallTile, positionTile, Color.White);
-            spriteBatch.Draw(bigTile, generateTilePosition(), Color.White);
-            spriteBatch.Draw(bigTile, positionTile, Color.White);
+            //spriteBatch.Draw(smallTile, positionTile, Color.White);
+            spriteBatch.Draw(bigTile, positionTileRandom, Color.White);
+            //spriteBatch.Draw(bigTile, positionTile, Color.White);
 
             spriteBatch.End();
 
@@ -214,7 +221,6 @@ namespace Run4FunMonogame
                     break;
             }
             y = -random.Next(tileHeight, screenHeight);
-
             return new Vector2(x, y);
         }
     }
