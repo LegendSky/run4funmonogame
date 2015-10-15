@@ -29,7 +29,7 @@ namespace Run4FunMonogame
 
         // private Sprite sprite = new Player();
 
-        private const string EV3_SERIAL_PORT = "COM14";
+        private const string EV3_SERIAL_PORT = "COM13";
 
         private int playerWidth;
         private int playerHeight;
@@ -140,10 +140,21 @@ namespace Run4FunMonogame
             if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
+                {
                     ev3Messenger.SendMessage("Move", "Left");
 
-                positionPlayer.X -= playerSpeed;
-                leftKeyPressed = true;
+
+                    EV3Message message = ev3Messenger.ReadMessage();
+                    if (message != null && message.MailboxTitle == "Command")
+                    {
+                        if (message.ValueAsText == "Left")
+                        {
+                            positionPlayer.X -= playerSpeed;
+                            rightKeyPressed = true;
+                        }
+                    }
+                }
+
             }
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
                 leftKeyPressed = false;
@@ -151,11 +162,33 @@ namespace Run4FunMonogame
             if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed)
             {
                 if (ev3Messenger.IsConnected)
+                {
                     ev3Messenger.SendMessage("Move", "Right");
 
-                positionPlayer.X += playerSpeed;
-                rightKeyPressed = true;
+                    EV3Message message = ev3Messenger.ReadMessage();
+                    if (message != null && message.MailboxTitle == "Command")
+                    {
+                        if (message.ValueAsText == "Right")
+                        {
+                            positionPlayer.X += playerSpeed;
+                            rightKeyPressed = true;
+                        }
+                    }
+                }
+
+
             }
+
+
+
+
+
+
+
+
+
+
+
             else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
                 rightKeyPressed = false;
 
