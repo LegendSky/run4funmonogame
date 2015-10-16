@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Run4FunMonogame.Sprites;
 using System;
+using System.Collections.Generic;
 
 namespace Run4FunMonogame
 {
@@ -15,10 +16,6 @@ namespace Run4FunMonogame
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private Texture2D player;
-        private Texture2D smallTile;
-        private Texture2D bigTile;
-
         private Vector2 positionPlayer;
         private Vector2 positionTile;
         private Vector2 positionTileRandom;
@@ -29,7 +26,7 @@ namespace Run4FunMonogame
 
         // private Sprite sprite = new Player();
 
-        private const string EV3_SERIAL_PORT = "COM13";
+        private const string EV3_SERIAL_PORT = "COM11";
 
         private int playerWidth;
         private int playerHeight;
@@ -40,6 +37,10 @@ namespace Run4FunMonogame
         private const int tileWidth = 230;
         private const int tileHeight = 500;
         private int middleTileX;
+
+        private Texture2D player;
+
+        private List<Tile> tiles = new List<Tile>();
 
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
@@ -79,8 +80,12 @@ namespace Run4FunMonogame
             middleTileX = (screenWidth / 2) - (tileWidth / 2);
 
             positionPlayer = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
-            positionTile = new Vector2(middleTileX, -tileHeight);
-            positionTileRandom = generateTilePosition();
+
+            Texture2D imageTile = Content.Load<Texture2D>("bigtile");
+            for (int i = 0; i < 10; i++)
+            {
+                tiles.Add(new Tile(imageTile, generateTilePosition()));
+            }
 
             base.Initialize();
         }
@@ -96,8 +101,8 @@ namespace Run4FunMonogame
 
             // TODO: use this.Content to load your game content here
             player = Content.Load<Texture2D>("player");
-            smallTile = Content.Load<Texture2D>("smalltile");
-            bigTile = Content.Load<Texture2D>("bigtile");
+            //smallTile = Content.Load<Texture2D>("smalltile");
+            //bigTile = Content.Load<Texture2D>("bigtile");
         }
 
         /// <summary>
@@ -143,7 +148,7 @@ namespace Run4FunMonogame
                 {
                     ev3Messenger.SendMessage("Move", "Left");
 
-
+                    /*
                     EV3Message message = ev3Messenger.ReadMessage();
                     if (message != null && message.MailboxTitle == "Command")
                     {
@@ -152,8 +157,10 @@ namespace Run4FunMonogame
                             positionPlayer.X -= playerSpeed;
                             rightKeyPressed = true;
                         }
-                    }
+                    }*/
                 }
+                positionPlayer.X -= playerSpeed;
+                leftKeyPressed = true;
 
             }
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
@@ -164,7 +171,7 @@ namespace Run4FunMonogame
                 if (ev3Messenger.IsConnected)
                 {
                     ev3Messenger.SendMessage("Move", "Right");
-
+/*                      
                     EV3Message message = ev3Messenger.ReadMessage();
                     if (message != null && message.MailboxTitle == "Command")
                     {
@@ -173,9 +180,10 @@ namespace Run4FunMonogame
                             positionPlayer.X += playerSpeed;
                             rightKeyPressed = true;
                         }
-                    }
+                    }*/
                 }
-
+                positionPlayer.X += playerSpeed;
+                rightKeyPressed = true;
 
             }
 
@@ -194,13 +202,17 @@ namespace Run4FunMonogame
 
             if (positionTile.Y > 1080)
             {
-                positionTile.Y = -tileHeight;
-                positionTileRandom.Y = -tileHeight;
+                foreach (Tile tile in tiles)
+                {
+                    tile.position.Y = -tileHeight;
+                }
             }
             else
             {
-                positionTile.Y += tileSpeed;
-                positionTileRandom.Y += tileSpeed;
+                foreach (Tile tile in tiles)
+                {
+                    tile.position.Y = -tileSpeed;
+                }
             }
             base.Update(gameTime);
         }
@@ -216,9 +228,18 @@ namespace Run4FunMonogame
             // Add drawing code here
             spriteBatch.Begin();
 
+
             spriteBatch.Draw(player, positionPlayer, Color.White);
+
+
+            foreach (Tile tile in tiles)
+            {
+                //spriteBatch.Draw(tile.image, tile.position, Color.White);
+            }
+
+
             //spriteBatch.Draw(smallTile, positionTile, Color.White);
-            spriteBatch.Draw(bigTile, positionTileRandom, Color.White);
+            //spriteBatch.Draw(bigTile, positionTileRandom, Color.White);
             //spriteBatch.Draw(bigTile, positionTile, Color.White);
 
             spriteBatch.End();
@@ -254,6 +275,7 @@ namespace Run4FunMonogame
                     break;
             }
             y = -random.Next(tileHeight, screenHeight);
+            Console.WriteLine("x: " + x + " y: " + y);
             return new Vector2(x, y);
         }
     }
