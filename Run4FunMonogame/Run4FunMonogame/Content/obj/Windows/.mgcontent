@@ -4,8 +4,14 @@
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
+<<<<<<< HEAD
     <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/player.png</File>
     <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/bigtile.png</File>
     <File>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/smalltile.png</File>
+=======
+    <File>C:/Users/MSI/GitHub/run4funMonogame/Run4FunMonogame/Run4FunMonogame/Content/player.png</File>
+    <File>C:/Users/MSI/GitHub/run4funMonogame/Run4FunMonogame/Run4FunMonogame/Content/bigtile.png</File>
+    <File>C:/Users/MSI/GitHub/run4funMonogame/Run4FunMonogame/Run4FunMonogame/Content/smalltile.png</File>
+>>>>>>> a4429bbdd7febe6bcfb0aa16cae4d59beb9b163a
   </SourceFiles>
 </SourceFileCollection>

@@ -5,14 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Run4FunMonogame
+namespace Run4FunMonogame.Sprites
 {
-    abstract class Sprite
+    class Player : Sprite
     {
-        public Texture2D image;
-        public Vector2 position;
-
-        public Sprite(Texture2D image, Vector2 position)
+        public Player(Texture2D image, Vector2 position, int speed) : base(image, position)
         {
             this.image = image;
             this.position = position;
