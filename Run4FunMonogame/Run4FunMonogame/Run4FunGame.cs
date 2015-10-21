@@ -84,7 +84,8 @@ namespace Run4FunMonogame
             Texture2D imageTile = Content.Load<Texture2D>("bigtile");
             for (int i = 0; i < 10; i++)
             {
-                tiles.Add(new Tile(imageTile, generateTilePosition()));
+                Vector2 vector = generateTilePosition();
+                tiles.Add(new Tile(imageTile, vector));
             }
 
             base.Initialize();
@@ -197,16 +198,6 @@ namespace Run4FunMonogame
 
             }
 
-
-
-
-
-
-
-
-
-
-
             else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
                 rightKeyPressed = false;
 
@@ -244,7 +235,7 @@ namespace Run4FunMonogame
 
             foreach (Tile tile in tiles)
             {
-                //spriteBatch.Draw(tile.image, tile.position, Color.White);
+                spriteBatch.Draw(tile.image, tile.position, Color.White);
             }
 
 
