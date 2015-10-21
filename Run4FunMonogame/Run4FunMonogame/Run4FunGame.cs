@@ -158,6 +158,11 @@ namespace Run4FunMonogame
                             rightKeyPressed = true;
                         }
                     }*/
+                    EV3Message message = ev3Messenger.ReadMessage();
+                    if (message != null && message.MailboxTitle == "currentColor")
+                    {
+                        Console.WriteLine(message.ValueAsNumber);
+                    }
                 }
                 positionPlayer.X -= playerSpeed;
                 leftKeyPressed = true;
@@ -181,6 +186,11 @@ namespace Run4FunMonogame
                             rightKeyPressed = true;
                         }
                     }*/
+                    EV3Message message = ev3Messenger.ReadMessage();
+                    if (message != null && message.MailboxTitle == "currentColor")
+                    {
+                        Console.WriteLine(message.ValueAsNumber);
+                    }
                 }
                 positionPlayer.X += playerSpeed;
                 rightKeyPressed = true;
