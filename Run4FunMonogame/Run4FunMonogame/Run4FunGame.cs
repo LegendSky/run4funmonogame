@@ -16,10 +16,6 @@ namespace Run4FunMonogame
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private Vector2 positionPlayer;
-        private Vector2 positionTile;
-        private Vector2 positionTileRandom;
-
         private KeyboardState keyState;
         private const int playerSpeed = 200;
         private const int tileSpeed = 10;
@@ -38,7 +34,7 @@ namespace Run4FunMonogame
         private const int tileHeight = 500;
         private int middleTileX;
 
-        private Texture2D player;
+        private Player player;
 
         private List<Tile> tiles = new List<Tile>();
 
@@ -79,14 +75,14 @@ namespace Run4FunMonogame
 
             middleTileX = (screenWidth / 2) - (tileWidth / 2);
 
-            positionPlayer = new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200);
+            player = new Player(Content.Load<Texture2D>("player"), new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200));
 
-            Texture2D imageTile = Content.Load<Texture2D>("bigtile");
+            /*Texture2D imageTile = Content.Load<Texture2D>("bigtile");
             for (int i = 0; i < 10; i++)
             {
                 Vector2 vector = generateTilePosition();
                 tiles.Add(new Tile(imageTile, vector));
-            }
+            }*/
 
             base.Initialize();
         }
@@ -101,7 +97,7 @@ namespace Run4FunMonogame
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            player = Content.Load<Texture2D>("player");
+            //player = Content.Load<Texture2D>("player");
             //smallTile = Content.Load<Texture2D>("smalltile");
             //bigTile = Content.Load<Texture2D>("bigtile");
         }
@@ -113,7 +109,7 @@ namespace Run4FunMonogame
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
-            player.Dispose();
+            //player.Dispose();
 
             // EV3: Disconnect
             if (ev3Messenger.IsConnected)
@@ -122,7 +118,8 @@ namespace Run4FunMonogame
 
         bool leftKeyPressed = false;
         bool rightKeyPressed = false;
-
+        float coolDownTime = 0;
+        float coolDownTime2 = 0;
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -135,6 +132,25 @@ namespace Run4FunMonogame
             // Exit button.
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
+
+            coolDownTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (coolDownTime >= 1000)
+            {
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+                coolDownTime = 0;
+            }
+
+            coolDownTime2 += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (coolDownTime2 >= 10)
+            {
+                for (int i = 0; i < tiles.Count; i++)
+                {
+                    if (tiles[i].position.Y > 600)
+                        tiles.Remove(tiles[i]);
+                    tiles[i].position.Y += tileSpeed;
+                }
+
+            }
 
             // Controller triggers.
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
@@ -165,7 +181,7 @@ namespace Run4FunMonogame
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                positionPlayer.X -= playerSpeed;
+                player.position.X -= playerSpeed;
                 leftKeyPressed = true;
 
             }
@@ -177,23 +193,23 @@ namespace Run4FunMonogame
                 if (ev3Messenger.IsConnected)
                 {
                     ev3Messenger.SendMessage("Move", "Right");
-/*                      
-                    EV3Message message = ev3Messenger.ReadMessage();
-                    if (message != null && message.MailboxTitle == "Command")
-                    {
-                        if (message.ValueAsText == "Right")
-                        {
-                            positionPlayer.X += playerSpeed;
-                            rightKeyPressed = true;
-                        }
-                    }*/
+                    /*                      
+                                        EV3Message message = ev3Messenger.ReadMessage();
+                                        if (message != null && message.MailboxTitle == "Command")
+                                        {
+                                            if (message.ValueAsText == "Right")
+                                            {
+                                                positionPlayer.X += playerSpeed;
+                                                rightKeyPressed = true;
+                                            }
+                                        }*/
                     EV3Message message = ev3Messenger.ReadMessage();
                     if (message != null && message.MailboxTitle == "currentColor")
                     {
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                positionPlayer.X += playerSpeed;
+                player.position.X += playerSpeed;
                 rightKeyPressed = true;
 
             }
@@ -201,20 +217,6 @@ namespace Run4FunMonogame
             else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
                 rightKeyPressed = false;
 
-            if (positionTile.Y > 1080)
-            {
-                foreach (Tile tile in tiles)
-                {
-                    tile.position.Y = -tileHeight;
-                }
-            }
-            else
-            {
-                foreach (Tile tile in tiles)
-                {
-                    tile.position.Y = -tileSpeed;
-                }
-            }
             base.Update(gameTime);
         }
 
@@ -228,20 +230,12 @@ namespace Run4FunMonogame
 
             // Add drawing code here
             spriteBatch.Begin();
-
-
-            spriteBatch.Draw(player, positionPlayer, Color.White);
-
-
+            spriteBatch.Draw(player.image, player.position, Color.White);
             foreach (Tile tile in tiles)
             {
                 spriteBatch.Draw(tile.image, tile.position, Color.White);
+                Console.WriteLine("draw: " + tile.position.Y);
             }
-
-
-            //spriteBatch.Draw(smallTile, positionTile, Color.White);
-            //spriteBatch.Draw(bigTile, positionTileRandom, Color.White);
-            //spriteBatch.Draw(bigTile, positionTile, Color.White);
 
             spriteBatch.End();
 

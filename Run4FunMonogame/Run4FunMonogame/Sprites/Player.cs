@@ -9,7 +9,7 @@ namespace Run4FunMonogame.Sprites
 {
     class Player : Sprite
     {
-        public Player(Texture2D image, Vector2 position, int speed) : base(image, position)
+        public Player(Texture2D image, Vector2 position) : base(image, position)
         {
             this.image = image;
             this.position = position;
