@@ -46,3 +46,9 @@
 /processorParam:TextureFormat=Color
 /build:smalltile.png
 
+#begin font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:font.spritefont
+

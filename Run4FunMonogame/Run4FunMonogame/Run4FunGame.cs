@@ -17,7 +17,6 @@ namespace Run4FunMonogame
         SpriteBatch spriteBatch;
 
         private KeyboardState keyState;
-        private const int playerSpeed = 200;
         private const int tileSpeed = 10;
 
         // private Sprite sprite = new Player();
@@ -27,12 +26,23 @@ namespace Run4FunMonogame
         private int playerWidth;
         private int playerHeight;
 
+        private int currentTile = TILE_3;
+        private const int TILE_1 = 1;
+        private const int TILE_2 = 2;
+        private const int TILE_3 = 3;
+        private const int TILE_4 = 4;
+        private const int TILE_5 = 5;
+
         private int screenWidth;
         private int screenHeight;
 
         private const int tileWidth = 230;
         private const int tileHeight = 500;
         private int middleTileX;
+
+        private int score = 0;
+
+        SpriteFont font;
 
         private Player player;
 
@@ -96,6 +106,7 @@ namespace Run4FunMonogame
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            font = Content.Load<SpriteFont>("font");
             // TODO: use this.Content to load your game content here
             //player = Content.Load<Texture2D>("player");
             //smallTile = Content.Load<Texture2D>("smalltile");
@@ -116,10 +127,24 @@ namespace Run4FunMonogame
                 ev3Messenger.Disconnect();
         }
 
-        bool leftKeyPressed = false;
-        bool rightKeyPressed = false;
-        float coolDownTime = 0;
-        float coolDownTime2 = 0;
+        private bool playerAndTileCollide(Player player, Tile tile)
+        {
+            Rectangle playerRect =
+                new Rectangle((int)player.position.X, (int)player.position.Y,
+                player.image.Width, player.image.Height);
+
+            Rectangle tileRect =
+                new Rectangle((int)tile.position.X, (int)tile.position.Y,
+                    tile.image.Width, tile.image.Height);
+
+            return playerRect.Intersects(tileRect);
+        }
+
+        private bool leftKeyPressed = false;
+        private bool rightKeyPressed = false;
+        private float coolDownTime = 0;
+        private float coolDownTime2 = 0;
+        private int intensity = 1000;
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -134,23 +159,39 @@ namespace Run4FunMonogame
                 Exit();
 
             coolDownTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (coolDownTime >= 1000)
+            if (coolDownTime >= intensity)
             {
-                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+                intensity -= 5;
                 coolDownTime = 0;
-            }
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
 
-            coolDownTime2 += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (coolDownTime2 >= 10)
-            {
                 for (int i = 0; i < tiles.Count; i++)
                 {
-                    if (tiles[i].position.Y > 600)
+                    if (tiles[i].position.Y > 1080)
                         tiles.Remove(tiles[i]);
-                    tiles[i].position.Y += tileSpeed;
+                }
+            }
+
+            //coolDownTime2 += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            //if (coolDownTime2 >= 50)
+            //{
+            //coolDownTime2 = 0;
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                // Check for collision.
+                if (playerAndTileCollide(player, tiles[i]))
+                {
+                    Console.WriteLine("you lost noob");
+                    Exit();
                 }
 
+
+                // Descend tiles.
+                tiles[i].position.Y += tileSpeed;
             }
+            //}
+
+            score += 1;
 
             // Controller triggers.
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
@@ -159,7 +200,7 @@ namespace Run4FunMonogame
             bool leftArrowPressed = keyState.IsKeyDown(Keys.Left);
             bool rightArrowPressed = keyState.IsKeyDown(Keys.Right);
 
-            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed)
+            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed && currentTile > TILE_1)
             {
                 if (ev3Messenger.IsConnected)
                 {
@@ -181,14 +222,15 @@ namespace Run4FunMonogame
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                player.position.X -= playerSpeed;
+                player.position.X -= tileWidth;
+                currentTile -= 1;
                 leftKeyPressed = true;
 
             }
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
                 leftKeyPressed = false;
 
-            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed)
+            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed && currentTile < TILE_5)
             {
                 if (ev3Messenger.IsConnected)
                 {
@@ -209,7 +251,8 @@ namespace Run4FunMonogame
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                player.position.X += playerSpeed;
+                player.position.X += tileWidth;
+                currentTile += 1;
                 rightKeyPressed = true;
 
             }
@@ -230,6 +273,9 @@ namespace Run4FunMonogame
 
             // Add drawing code here
             spriteBatch.Begin();
+
+            spriteBatch.DrawString(font, "Score: " + score, new Vector2(20, 200), Color.Red);
+            spriteBatch.DrawString(font, "Respawn-rate: " + intensity, new Vector2(20, 300), Color.Blue);
             spriteBatch.Draw(player.image, player.position, Color.White);
             foreach (Tile tile in tiles)
             {
@@ -242,6 +288,7 @@ namespace Run4FunMonogame
             base.Draw(gameTime);
         }
 
+        private int lastX;
         private Vector2 generateTilePosition()
         {
             Random random = new Random();
@@ -271,6 +318,7 @@ namespace Run4FunMonogame
             }
             y = -random.Next(tileHeight, screenHeight);
             Console.WriteLine("x: " + x + " y: " + y);
+
             return new Vector2(x, y);
         }
     }
