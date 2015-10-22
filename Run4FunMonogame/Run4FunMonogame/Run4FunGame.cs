@@ -13,40 +13,28 @@ namespace Run4FunMonogame
     /// </summary>
     public class Run4FunGame : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
 
         private KeyboardState keyState;
         private const int tileSpeed = 10;
-
-        // private Sprite sprite = new Player();
 
         private const string EV3_SERIAL_PORT = "COM11";
 
         private int playerWidth;
         private int playerHeight;
 
+        // The current tile the pc is on.
         private int currentTile;
+        // The current tile the EV3 is on.
         private int currentTileEV3;
-        private const int EV3_TILE_1 = 2;
-        private const int EV3_TILE_2 = 7;
-        private const int EV3_TILE_3 = 6;
-        private const int EV3_TILE_4 = 2;
-        private const int EV3_TILE_5 = 4;
 
-        private int screenWidth;
-        private int screenHeight;
-
-        private const int tileWidth = 230;
-        private const int tileHeight = 500;
-        private int middleTileX;
+        private const int TILE_WIDTH = 230;
+        private const int TILE_HEIGHT = 500;
 
         private int score = 0;
-
-        SpriteFont font;
-
+        private SpriteFont font;
         private Player player;
-
         private List<Tile> tiles = new List<Tile>();
 
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
@@ -58,7 +46,6 @@ namespace Run4FunMonogame
             graphics.PreferredBackBufferWidth = 1920;
             graphics.PreferredBackBufferHeight = 1080;
             Window.AllowUserResizing = true;
-
             Content.RootDirectory = "Content";
 
             // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
@@ -78,15 +65,11 @@ namespace Run4FunMonogame
         {
             keyState = Keyboard.GetState();
 
-            screenWidth = Window.ClientBounds.Width;
-            screenHeight = Window.ClientBounds.Height;
-
             playerWidth = 100;
             playerHeight = 100;
 
-            currentTile = (int)tiles1.TILE_3;
-
-            middleTileX = (screenWidth / 2) - (tileWidth / 2);
+            currentTile = (int)tilePc.TILE_3;
+            currentTileEV3 = (int)tileEV3.EV3_TILE_3;
 
             base.Initialize();
         }
@@ -100,7 +83,7 @@ namespace Run4FunMonogame
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            player = new Player(Content.Load<Texture2D>("player"), new Vector2((screenWidth / 2) - (playerWidth / 2), screenHeight - 200));
+            player = new Player(Content.Load<Texture2D>("player"), new Vector2((Window.ClientBounds.Width / 2) - (playerWidth / 2), Window.ClientBounds.Height - 200));
             font = Content.Load<SpriteFont>("font");
         }
 
@@ -110,21 +93,27 @@ namespace Run4FunMonogame
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
-            //player.Dispose();
-
-            // EV3: Disconnect
+            // EV3 Disconnect
             if (ev3Messenger.IsConnected)
                 ev3Messenger.Disconnect();
         }
 
-        private enum tiles1
+        private enum tilePc
         {
             TILE_1 = 1,
             TILE_2 = 2,
             TILE_3 = 3,
             TILE_4 = 4,
             TILE_5 = 5
+        }
+
+        private enum tileEV3
+        {
+            EV3_TILE_1 = 2,
+            EV3_TILE_2 = 7,
+            EV3_TILE_3 = 6,
+            EV3_TILE_4 = 2,
+            EV3_TILE_5 = 4
         }
 
         private bool playerAndTileCollide(Player player, Tile tile)
@@ -139,7 +128,7 @@ namespace Run4FunMonogame
         private bool rightKeyPressed = false;
         private float spawnTime = 0;
         private int intensity = 1000;
-        private int currentColor = EV3_TILE_3;
+        private int currentColor = (int)tileEV3.EV3_TILE_3;
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -175,8 +164,6 @@ namespace Run4FunMonogame
                     //Console.WriteLine("you lost noob");
                     //Exit();
                 }
-
-
                 // Descend tiles.
                 tiles[i].position.Y += tileSpeed;
             }
@@ -193,7 +180,7 @@ namespace Run4FunMonogame
             EV3Message message = ev3Messenger.ReadMessage();
             Console.WriteLine(message);
 
-            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed && currentTile > (int)tiles1.TILE_1)
+            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed && currentTile > (int)tilePc.TILE_1)
             {
                 if (ev3Messenger.IsConnected)
                 {
@@ -213,7 +200,7 @@ namespace Run4FunMonogame
                     {
                         if (currentColor != (int)message.ValueAsNumber)
                         {
-                            player.position.X -= tileWidth;
+                            player.position.X -= TILE_WIDTH;
                             currentTile -= 1;
                             leftKeyPressed = true;
                         }
@@ -229,7 +216,7 @@ namespace Run4FunMonogame
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
                 leftKeyPressed = false;
 
-            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed && currentTile < (int)tiles1.TILE_5)
+            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed && currentTile < (int)tilePc.TILE_5)
             {
                 if (ev3Messenger.IsConnected)
                 {
@@ -249,7 +236,7 @@ namespace Run4FunMonogame
                     {
                         if (currentColor != (int)message.ValueAsNumber)
                         {
-                            player.position.X += tileWidth;
+                            player.position.X += TILE_WIDTH;
                             currentTile += 1;
                             rightKeyPressed = true;
                         }
@@ -286,9 +273,7 @@ namespace Run4FunMonogame
 
             // Draw tiles.
             foreach (Tile tile in tiles)
-            {
                 spriteBatch.Draw(tile.image, tile.position, Color.White);
-            }
 
             spriteBatch.End();
 
@@ -299,30 +284,31 @@ namespace Run4FunMonogame
         {
             Random random = new Random();
             int randomNumber = random.Next(5);
+            int middleTileX = (Window.ClientBounds.Width / 2) - (TILE_WIDTH / 2);
             int x;
             int y;
             switch (randomNumber)
             {
                 case 0:
-                    x = middleTileX - (2 * tileWidth);
+                    x = middleTileX - (2 * TILE_WIDTH);
                     break;
                 case 1:
-                    x = middleTileX - tileWidth;
+                    x = middleTileX - TILE_WIDTH;
                     break;
                 case 2:
                     x = middleTileX;
                     break;
                 case 3:
-                    x = middleTileX + tileWidth;
+                    x = middleTileX + TILE_WIDTH;
                     break;
                 case 4:
-                    x = middleTileX + (2 * tileWidth);
+                    x = middleTileX + (2 * TILE_WIDTH);
                     break;
                 default:
                     x = 0;
                     break;
             }
-            y = -random.Next(tileHeight, screenHeight);
+            y = -random.Next(TILE_HEIGHT, Window.ClientBounds.Height);
             //Console.WriteLine("x: " + x + " y: " + y);
 
             return new Vector2(x, y);
