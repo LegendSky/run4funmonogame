@@ -19,7 +19,7 @@ namespace Run4FunMonogame
         private KeyboardState keyState;
         private const int tileSpeed = 10;
 
-        private const string EV3_SERIAL_PORT = "COM11";
+        private const string EV3_SERIAL_PORT = "COM24";
 
         private int playerWidth;
         private int playerHeight;
@@ -145,7 +145,7 @@ namespace Run4FunMonogame
             spawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (spawnTime >= intensity)
             {
-                intensity -= 5;
+                //intensity -= 5;
                 spawnTime = 0;
                 tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
 
@@ -174,27 +174,27 @@ namespace Run4FunMonogame
             bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
             bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
 
+            // Arrow keys.
             bool leftArrowPressed = keyState.IsKeyDown(Keys.Left);
             bool rightArrowPressed = keyState.IsKeyDown(Keys.Right);
 
             EV3Message message = ev3Messenger.ReadMessage();
-            Console.WriteLine(message);
 
             if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed && currentTile > (int)tilePc.TILE_1)
             {
                 if (ev3Messenger.IsConnected)
                 {
                     ev3Messenger.SendMessage("Move", "Left");
-                    if (message != null && message.MailboxTitle == "Command")
+                    /*if (message != null && message.MailboxTitle == "Command")
                     {
-                        //Console.WriteLine(message);
                         if (message.ValueAsText == "Left")
                         {
-                            //player.position.X -= tileWidth;
-                            //currentTile -= 1;
-                            //leftKeyPressed = true;
+                            player.position.X -= TILE_WIDTH;
+                            currentTile -= 1;
+                            leftKeyPressed = true;
+                            kanker = false;
                         }
-                    }
+                    }*/
 
                     if (message != null && message.MailboxTitle == "currentColor")
                     {
@@ -208,29 +208,30 @@ namespace Run4FunMonogame
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                //player.position.X -= tileWidth;
-                //currentTile -= 1;
-                //leftKeyPressed = true;
-
             }
             else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
+            {
+                if (message == null)
+                    return;
+                if (message.ValueAsText == "Left")
+                    return;
                 leftKeyPressed = false;
+            }
 
             if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed && currentTile < (int)tilePc.TILE_5)
             {
                 if (ev3Messenger.IsConnected)
                 {
                     ev3Messenger.SendMessage("Move", "Right");
-
-                    if (message != null && message.MailboxTitle == "Command")
+                    /*if (message != null && message.MailboxTitle == "Command")
                     {
                         if (message.ValueAsText == "Right")
                         {
-                            //player.position.X += tileWidth;
-                            //currentTile += 1;
-                            //rightKeyPressed = true;
+                            player.position.X += TILE_WIDTH;
+                            currentTile += 1;
+                            rightKeyPressed = true;
                         }
-                    }
+                    }*/
 
                     if (message != null && message.MailboxTitle == "currentColor")
                     {
@@ -244,15 +245,17 @@ namespace Run4FunMonogame
                         Console.WriteLine(message.ValueAsNumber);
                     }
                 }
-                //player.position.X += tileWidth;
-                // currentTile += 1;
-                //rightKeyPressed = true;
-
             }
 
             else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
-                rightKeyPressed = false;
+            {
+                if (message == null)
+                    return;
+                if (message.ValueAsText == "Right")
+                    return;
 
+                rightKeyPressed = false;
+            }
             base.Update(gameTime);
         }
 
