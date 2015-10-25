@@ -17,6 +17,11 @@ namespace Run4FunMonogame
         private SpriteBatch spriteBatch;
 
         private KeyboardState keyState;
+        private KeyboardState prevKeyState;
+
+        private GamePadState gamePadState;
+        private GamePadState prevGamePadState;
+
         private const int tileSpeed = 10;
 
         private const string EV3_SERIAL_PORT = "COM24";
@@ -124,8 +129,6 @@ namespace Run4FunMonogame
             return playerRect.Intersects(tileRect);
         }
 
-        private bool leftKeyPressed = false;
-        private bool rightKeyPressed = false;
         private float spawnTime = 0;
         private int intensity = 1000;
         private int currentColor = (int)tileEV3.EV3_TILE_3;
@@ -136,8 +139,6 @@ namespace Run4FunMonogame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            keyState = Keyboard.GetState();
-
             // Exit button.
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
@@ -168,95 +169,112 @@ namespace Run4FunMonogame
                 tiles[i].position.Y += tileSpeed;
             }
 
-            score += 1;
+            increaseScore();
 
-            // Controller triggers.
-            bool triggerLeftPressed = GamePad.GetState(PlayerIndex.One).Triggers.Left >= 0.5;
-            bool triggerRightPressed = GamePad.GetState(PlayerIndex.One).Triggers.Right >= 0.5;
+            prevKeyState = keyState;
+            keyState = Keyboard.GetState();
 
-            // Arrow keys.
-            bool leftArrowPressed = keyState.IsKeyDown(Keys.Left);
-            bool rightArrowPressed = keyState.IsKeyDown(Keys.Right);
+            prevGamePadState = gamePadState;
+            gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            EV3Message message = ev3Messenger.ReadMessage();
-
-            if ((triggerLeftPressed || leftArrowPressed) && !leftKeyPressed && currentTile > (int)tilePc.TILE_1)
+            if (leftKeyOrTriggerPressed())
             {
-                if (ev3Messenger.IsConnected)
-                {
-                    ev3Messenger.SendMessage("Move", "Left");
-                    /*if (message != null && message.MailboxTitle == "Command")
-                    {
-                        if (message.ValueAsText == "Left")
-                        {
-                            player.position.X -= TILE_WIDTH;
-                            currentTile -= 1;
-                            leftKeyPressed = true;
-                            kanker = false;
-                        }
-                    }*/
-
-                    if (message != null && message.MailboxTitle == "currentColor")
-                    {
-                        if (currentColor != (int)message.ValueAsNumber)
-                        {
-                            player.position.X -= TILE_WIDTH;
-                            currentTile -= 1;
-                            leftKeyPressed = true;
-                        }
-                        currentColor = (int)message.ValueAsNumber;
-                        Console.WriteLine(message.ValueAsNumber);
-                    }
-                }
+                moveLeft();
             }
-            else if ((!triggerLeftPressed && !keyState.IsKeyDown(Keys.Left)) && leftKeyPressed)
+            if (rightKeyOrTriggerPressed())
             {
-                if (message == null)
-                    return;
-                if (message.ValueAsText == "Left")
-                    return;
-                leftKeyPressed = false;
+                moveRight();
             }
 
-            if ((triggerRightPressed || rightArrowPressed) && !rightKeyPressed && currentTile < (int)tilePc.TILE_5)
-            {
-                if (ev3Messenger.IsConnected)
-                {
-                    ev3Messenger.SendMessage("Move", "Right");
-                    /*if (message != null && message.MailboxTitle == "Command")
-                    {
-                        if (message.ValueAsText == "Right")
-                        {
-                            player.position.X += TILE_WIDTH;
-                            currentTile += 1;
-                            rightKeyPressed = true;
-                        }
-                    }*/
-
-                    if (message != null && message.MailboxTitle == "currentColor")
-                    {
-                        if (currentColor != (int)message.ValueAsNumber)
-                        {
-                            player.position.X += TILE_WIDTH;
-                            currentTile += 1;
-                            rightKeyPressed = true;
-                        }
-                        currentColor = (int)message.ValueAsNumber;
-                        Console.WriteLine(message.ValueAsNumber);
-                    }
-                }
-            }
-
-            else if ((!triggerRightPressed && !rightArrowPressed) && rightKeyPressed)
-            {
-                if (message == null)
-                    return;
-                if (message.ValueAsText == "Right")
-                    return;
-
-                rightKeyPressed = false;
-            }
             base.Update(gameTime);
+        }
+
+        private void moveLeft()
+        {
+            if (ev3Messenger.IsConnected)
+            {
+                ev3Messenger.SendMessage("Move", "Left");
+
+                /*if (message != null && message.MailboxTitle == "Command")
+                {
+                    if (message.ValueAsText == "Left")
+                    {
+                        player.position.X -= TILE_WIDTH;
+                        currentTile -= 1;
+                        leftKeyPressed = true;
+                        kanker = false;
+                    }
+                }*/
+                EV3Message message = ev3Messenger.ReadMessage();
+                if (message != null && message.MailboxTitle == "currentColor")
+                {
+                    if (currentColor != (int)message.ValueAsNumber)
+                    {
+                        player.position.X -= TILE_WIDTH;
+                        currentTile -= 1;
+                    }
+                    currentColor = (int)message.ValueAsNumber;
+                    Console.WriteLine(message.ValueAsNumber);
+                }
+            }
+            else
+            {
+                player.position.X -= TILE_WIDTH;
+                currentTile -= 1;
+            }
+        }
+
+        private void moveRight()
+        {
+            if (ev3Messenger.IsConnected)
+            {
+                ev3Messenger.SendMessage("Move", "Right");
+                /*if (message != null && message.MailboxTitle == "Command")
+                {
+                    if (message.ValueAsText == "Right")
+                    {
+                        player.position.X += TILE_WIDTH;
+                        currentTile += 1;
+                        rightKeyPressed = true;
+                    }
+                }*/
+
+                EV3Message message = ev3Messenger.ReadMessage();
+                if (message != null && message.MailboxTitle == "currentColor")
+                {
+                    if (currentColor != (int)message.ValueAsNumber)
+                    {
+                        player.position.X += TILE_WIDTH;
+                        currentTile += 1;
+                    }
+                    currentColor = (int)message.ValueAsNumber;
+                    Console.WriteLine(message.ValueAsNumber);
+                }
+            }
+            else
+            {
+                player.position.X += TILE_WIDTH;
+                currentTile += 1;
+            }
+        }
+
+        private bool leftKeyOrTriggerPressed()
+        {
+            return ((gamePadState.Triggers.Left >= 0.5 && prevGamePadState.Triggers.Left < 0.5)
+                || (keyState.IsKeyDown(Keys.Left) && prevKeyState.IsKeyUp(Keys.Left)))
+                && currentTile > (int)tilePc.TILE_1;
+        }
+
+        private bool rightKeyOrTriggerPressed()
+        {
+            return ((gamePadState.Triggers.Right >= 0.5 && prevGamePadState.Triggers.Right < 0.5)
+                || (keyState.IsKeyDown(Keys.Right) && prevKeyState.IsKeyUp(Keys.Right)))
+                && currentTile < (int)tilePc.TILE_5;
+        }
+
+        private void increaseScore()
+        {
+            score += 1;
         }
 
         /// <summary>
