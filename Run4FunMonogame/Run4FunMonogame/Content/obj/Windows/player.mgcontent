@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <SourceFile>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/player.png</SourceFile>
-  <SourceTime>2015-10-13T20:45:11.1480995+02:00</SourceTime>
-  <DestFile>C:/Users/Corsair/GitHub/run4funmonogame/Run4FunMonogame/Run4FunMonogame/Content/bin/Windows/player.xnb</DestFile>
-  <DestTime>2015-10-25T09:26:42.9485098+01:00</DestTime>
+  <SourceFile>C:/Users/MSI/GitHub/run4funMonogame/Run4FunMonogame/Run4FunMonogame/Content/player.png</SourceFile>
+  <SourceTime>2015-10-12T12:49:56.8857222+02:00</SourceTime>
+  <DestFile>C:/Users/MSI/GitHub/run4funMonogame/Run4FunMonogame/Run4FunMonogame/Content/bin/Windows/player.xnb</DestFile>
+  <DestTime>2015-10-25T08:56:14.5953116+01:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2015-04-29T19:14:44+02:00</ImporterTime>
   <Processor>TextureProcessor</Processor>

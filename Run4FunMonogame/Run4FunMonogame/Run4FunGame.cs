@@ -68,8 +68,6 @@ namespace Run4FunMonogame
         /// </summary>
         protected override void Initialize()
         {
-            keyState = Keyboard.GetState();
-
             playerWidth = 100;
             playerHeight = 100;
 
