@@ -193,17 +193,16 @@ namespace Run4FunMonogame
             {
                 ev3Messenger.SendMessage("Move", "Left");
 
-                /*if (message != null && message.MailboxTitle == "Command")
+                EV3Message message = ev3Messenger.ReadMessage();
+                if (message != null && message.MailboxTitle == "Command")
                 {
                     if (message.ValueAsText == "Left")
                     {
                         player.position.X -= TILE_WIDTH;
                         currentTile -= 1;
-                        leftKeyPressed = true;
-                        kanker = false;
                     }
-                }*/
-                EV3Message message = ev3Messenger.ReadMessage();
+                }
+                /*
                 if (message != null && message.MailboxTitle == "currentColor")
                 {
                     if (currentColor != (int)message.ValueAsNumber)
@@ -214,6 +213,7 @@ namespace Run4FunMonogame
                     currentColor = (int)message.ValueAsNumber;
                     Console.WriteLine(message.ValueAsNumber);
                 }
+                */
             }
             else
             {
@@ -227,17 +227,17 @@ namespace Run4FunMonogame
             if (ev3Messenger.IsConnected)
             {
                 ev3Messenger.SendMessage("Move", "Right");
-                /*if (message != null && message.MailboxTitle == "Command")
+
+                EV3Message message = ev3Messenger.ReadMessage();
+                if (message != null && message.MailboxTitle == "Command")
                 {
                     if (message.ValueAsText == "Right")
                     {
                         player.position.X += TILE_WIDTH;
                         currentTile += 1;
-                        rightKeyPressed = true;
                     }
-                }*/
-
-                EV3Message message = ev3Messenger.ReadMessage();
+                }
+                /*
                 if (message != null && message.MailboxTitle == "currentColor")
                 {
                     if (currentColor != (int)message.ValueAsNumber)
@@ -248,6 +248,7 @@ namespace Run4FunMonogame
                     currentColor = (int)message.ValueAsNumber;
                     Console.WriteLine(message.ValueAsNumber);
                 }
+                */
             }
             else
             {
