@@ -9,41 +9,42 @@ using System.Collections.Generic;
 namespace Run4FunMonogame
 {
     /// <summary>
-    /// This is the main type for your game.
+    /// Run4Fun game by A4B 2015.
     /// </summary>
     public class Run4FunGame : Game
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private SpriteFont font;
+        private KeyboardState prevKeyState, keyState;
+        private GamePadState prevGamePadState, gamePadState;
 
-        private KeyboardState keyState;
-        private KeyboardState prevKeyState;
+        private int tileSpeed = 10;
 
-        private GamePadState gamePadState;
-        private GamePadState prevGamePadState;
+        private const string EV3_SERIAL_PORT = "COM5";
 
-        private const int tileSpeed = 10;
-
-        private const string EV3_SERIAL_PORT = "COM26";
-
-        private int playerWidth;
-        private int playerHeight;
+        private const int playerWidth = 100, playerHeight = 100;
+        private const int TILE_WIDTH = 230, TILE_HEIGHT = 500;
 
         // The current tile the pc is on.
         private int currentTile;
         // The current tile the EV3 is on.
         private int currentTileEV3;
 
-        private const int TILE_WIDTH = 230;
-        private const int TILE_HEIGHT = 500;
-
         private int score = 0;
-        private SpriteFont font;
         private Player player;
         private List<Tile> tiles = new List<Tile>();
 
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
+
+        private const bool collisionEnabled = false;
+        private bool boost = false; // boost/dash.
+        private bool hyperMode = false; // hypermode, double score.
+
+        private float spawnTime = 0;
+        private int intensity = 1000;
+        private int currentColor = (int)tileEV3.EV3_TILE_3;
 
         public Run4FunGame()
         {
@@ -68,9 +69,6 @@ namespace Run4FunMonogame
         /// </summary>
         protected override void Initialize()
         {
-            playerWidth = 100;
-            playerHeight = 100;
-
             currentTile = (int)tilePc.TILE_3;
             currentTileEV3 = (int)tileEV3.EV3_TILE_3;
 
@@ -101,35 +99,6 @@ namespace Run4FunMonogame
                 ev3Messenger.Disconnect();
         }
 
-        private enum tilePc
-        {
-            TILE_1 = 1,
-            TILE_2 = 2,
-            TILE_3 = 3,
-            TILE_4 = 4,
-            TILE_5 = 5
-        }
-
-        private enum tileEV3
-        {
-            EV3_TILE_1 = 1,// black
-            EV3_TILE_2 = 2,// blue
-            EV3_TILE_3 = 3,// green
-            EV3_TILE_4 = 4,// yellow
-            EV3_TILE_5 = 5// red
-        }
-
-        private bool playerAndTileCollide(Player player, Tile tile)
-        {
-            Rectangle playerRect = new Rectangle((int)player.position.X, (int)player.position.Y, player.image.Width, player.image.Height);
-            Rectangle tileRect = new Rectangle((int)tile.position.X, (int)tile.position.Y, tile.image.Width, tile.image.Height);
-
-            return playerRect.Intersects(tileRect);
-        }
-
-        private float spawnTime = 0;
-        private int intensity = 1000;
-        private int currentColor = (int)tileEV3.EV3_TILE_3;
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -137,58 +106,33 @@ namespace Run4FunMonogame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            prevKeyState = keyState;
-            keyState = Keyboard.GetState();
+            // Handles key/button presses.
+            handleKeys();
 
-            prevGamePadState = gamePadState;
-            gamePadState = GamePad.GetState(PlayerIndex.One);
+            // Reads incoming messages and does the appropiate action. 
+            readEV3MessageAndDoStuff();
 
-            if (leftKeyOrTriggerPressed())
-            {
-                moveLeft();
-            }
-            else if (rightKeyOrTriggerPressed())
-            {
-                moveRight();
-            }
-            // Exit button.
-            else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
-                Exit();
+            // Check for collision and descent tiles.
+            checkForCollisionAndDescentTiles();
 
+            // Increase score.
             increaseScore();
 
+            // Add and remove tiles.
             spawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (spawnTime >= intensity)
             {
                 //intensity -= 5;
+                //tileSpeed += 1;
                 spawnTime = 0;
-                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
-
-                for (int i = 0; i < tiles.Count; i++)
-                {
-                    if (tiles[i].position.Y > 1080)
-                        tiles.Remove(tiles[i]);
-                }
-
-
+                addAndRemoveTiles();
             }
 
-            for (int i = 0; i < tiles.Count; i++)
-            {
-                // Check for collision.
-                if (playerAndTileCollide(player, tiles[i]))
-                {
-                    //Console.WriteLine("you lost noob");
-                    //Exit();
-                }
-                // Descend tiles.
-                tiles[i].position.Y += tileSpeed;
-            }
+            base.Update(gameTime);
+        }
 
-
-
-
-
+        private void readEV3MessageAndDoStuff()
+        {
             if (ev3Messenger.IsConnected)
             {
                 EV3Message message = ev3Messenger.ReadMessage();
@@ -227,9 +171,53 @@ namespace Run4FunMonogame
                     }
                 }
             }
+        }
 
+        private void addAndRemoveTiles()
+        {
+            tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                if (tiles[i].position.Y > 1080)
+                    tiles.Remove(tiles[i]);
+            }
+        }
 
-            base.Update(gameTime);
+        private void handleKeys()
+        {
+            prevKeyState = keyState;
+            keyState = Keyboard.GetState();
+
+            prevGamePadState = gamePadState;
+            gamePadState = GamePad.GetState(PlayerIndex.One);
+
+            if (leftKeyOrTriggerPressed())
+            {
+                moveLeft();
+            }
+            else if (rightKeyOrTriggerPressed())
+            {
+                moveRight();
+            }
+            else if (aOrSpacePressed())
+                boost = !boost;
+
+            // Exit button.
+            else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
+                Exit();
+        }
+
+        private void checkForCollisionAndDescentTiles()
+        {
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                // Check for collision.
+                if (collisionEnabled && playerAndTileCollide(player, tiles[i]))
+                    Exit();
+
+                // Descend tiles.
+                tiles[i].position.Y += boost ? tileSpeed * 5 : tileSpeed;
+            }
         }
 
         private void moveLeft()
@@ -272,6 +260,38 @@ namespace Run4FunMonogame
                 && currentTile < (int)tilePc.TILE_5;
         }
 
+        private bool aOrSpacePressed()
+        {
+            return ((gamePadState.Buttons.A == ButtonState.Pressed && prevGamePadState.Buttons.A != ButtonState.Pressed)
+                || (keyState.IsKeyDown(Keys.Space) && prevKeyState.IsKeyUp(Keys.Space)));
+        }
+
+        private enum tilePc
+        {
+            TILE_1 = 1,
+            TILE_2 = 2,
+            TILE_3 = 3,
+            TILE_4 = 4,
+            TILE_5 = 5
+        }
+
+        private enum tileEV3
+        {
+            EV3_TILE_1 = 1,// black
+            EV3_TILE_2 = 2,// blue
+            EV3_TILE_3 = 3,// green
+            EV3_TILE_4 = 4,// yellow
+            EV3_TILE_5 = 5// red
+        }
+
+        private bool playerAndTileCollide(Player player, Tile tile)
+        {
+            Rectangle playerRect = new Rectangle((int)player.position.X, (int)player.position.Y, player.image.Width, player.image.Height);
+            Rectangle tileRect = new Rectangle((int)tile.position.X, (int)tile.position.Y, tile.image.Width, tile.image.Height);
+
+            return playerRect.Intersects(tileRect);
+        }
+
         private void increaseScore()
         {
             score += 1;
@@ -288,8 +308,24 @@ namespace Run4FunMonogame
             // Add drawing code here
             spriteBatch.Begin();
 
-            spriteBatch.DrawString(font, "Score: " + score, new Vector2(20, 200), Color.Red);
-            spriteBatch.DrawString(font, "Respawn-rate: " + intensity, new Vector2(20, 300), Color.Blue);
+            int text1X = 20;
+            int text2X = 280;
+
+            Color color1 = Color.Red;
+            Color color2 = Color.Green;
+
+            spriteBatch.DrawString(font, "Score: ", new Vector2(text1X, 200), color1);
+            spriteBatch.DrawString(font, score.ToString(), new Vector2(text2X, 200), color2);
+
+            spriteBatch.DrawString(font, "Speed: ", new Vector2(text1X, 250), color1);
+            spriteBatch.DrawString(font, tileSpeed.ToString(), new Vector2(text2X, 250), color2);
+
+            spriteBatch.DrawString(font, "Boost: ", new Vector2(text1X, 300), color1);
+            spriteBatch.DrawString(font, boost ? "On" : "Off", new Vector2(text2X, 300), color2);
+
+            spriteBatch.DrawString(font, "Hypermode: ", new Vector2(text1X, 350), color1);
+            spriteBatch.DrawString(font, hyperMode ? "On" : "Off", new Vector2(text2X, 350), color2);
+
             spriteBatch.Draw(player.image, player.position, Color.White);
 
             // Draw tiles.
