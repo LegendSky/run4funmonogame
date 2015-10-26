@@ -24,7 +24,7 @@ namespace Run4FunMonogame
 
         private const int tileSpeed = 10;
 
-        private const string EV3_SERIAL_PORT = "COM24";
+        private const string EV3_SERIAL_PORT = "COM26";
 
         private int playerWidth;
         private int playerHeight;
@@ -112,11 +112,11 @@ namespace Run4FunMonogame
 
         private enum tileEV3
         {
-            EV3_TILE_1 = 2,
-            EV3_TILE_2 = 7,
-            EV3_TILE_3 = 6,
-            EV3_TILE_4 = 2,
-            EV3_TILE_5 = 4
+            EV3_TILE_1 = 1,// black
+            EV3_TILE_2 = 2,// blue
+            EV3_TILE_3 = 3,// green
+            EV3_TILE_4 = 4,// yellow
+            EV3_TILE_5 = 5// red
         }
 
         private bool playerAndTileCollide(Player player, Tile tile)
@@ -137,9 +137,25 @@ namespace Run4FunMonogame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            prevKeyState = keyState;
+            keyState = Keyboard.GetState();
+
+            prevGamePadState = gamePadState;
+            gamePadState = GamePad.GetState(PlayerIndex.One);
+
+            if (leftKeyOrTriggerPressed())
+            {
+                moveLeft();
+            }
+            else if (rightKeyOrTriggerPressed())
+            {
+                moveRight();
+            }
             // Exit button.
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
+            else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
+
+            increaseScore();
 
             spawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (spawnTime >= intensity)
@@ -153,6 +169,8 @@ namespace Run4FunMonogame
                     if (tiles[i].position.Y > 1080)
                         tiles.Remove(tiles[i]);
                 }
+
+
             }
 
             for (int i = 0; i < tiles.Count; i++)
@@ -167,22 +185,49 @@ namespace Run4FunMonogame
                 tiles[i].position.Y += tileSpeed;
             }
 
-            increaseScore();
 
-            prevKeyState = keyState;
-            keyState = Keyboard.GetState();
 
-            prevGamePadState = gamePadState;
-            gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            if (leftKeyOrTriggerPressed())
+
+            if (ev3Messenger.IsConnected)
             {
-                moveLeft();
+                EV3Message message = ev3Messenger.ReadMessage();
+                if (message != null && message.MailboxTitle == "Command")
+                {
+                    if (message.ValueAsText == "Left")
+                    {
+                        player.position.X -= TILE_WIDTH;
+                        currentTile -= 1;
+                    }
+                    else if (message.ValueAsText == "Right")
+                    {
+                        player.position.X += TILE_WIDTH;
+                        currentTile += 1;
+                    }
+                }
+                else if (message != null && message.MailboxTitle == "Color")
+                {
+                    switch ((int)message.ValueAsNumber)
+                    {
+                        case 1:
+                            Console.WriteLine("color 1: black");
+                            break;
+                        case 2:
+                            Console.WriteLine("color 2: blue");
+                            break;
+                        case 3:
+                            Console.WriteLine("color 3: green");
+                            break;
+                        case 4:
+                            Console.WriteLine("color 4: yellow");
+                            break;
+                        case 5:
+                            Console.WriteLine("color 5: red");
+                            break;
+                    }
+                }
             }
-            if (rightKeyOrTriggerPressed())
-            {
-                moveRight();
-            }
+
 
             base.Update(gameTime);
         }
@@ -192,28 +237,6 @@ namespace Run4FunMonogame
             if (ev3Messenger.IsConnected)
             {
                 ev3Messenger.SendMessage("Move", "Left");
-
-                EV3Message message = ev3Messenger.ReadMessage();
-                if (message != null && message.MailboxTitle == "Command")
-                {
-                    if (message.ValueAsText == "Left")
-                    {
-                        player.position.X -= TILE_WIDTH;
-                        currentTile -= 1;
-                    }
-                }
-                /*
-                if (message != null && message.MailboxTitle == "currentColor")
-                {
-                    if (currentColor != (int)message.ValueAsNumber)
-                    {
-                        player.position.X -= TILE_WIDTH;
-                        currentTile -= 1;
-                    }
-                    currentColor = (int)message.ValueAsNumber;
-                    Console.WriteLine(message.ValueAsNumber);
-                }
-                */
             }
             else
             {
@@ -227,28 +250,6 @@ namespace Run4FunMonogame
             if (ev3Messenger.IsConnected)
             {
                 ev3Messenger.SendMessage("Move", "Right");
-
-                EV3Message message = ev3Messenger.ReadMessage();
-                if (message != null && message.MailboxTitle == "Command")
-                {
-                    if (message.ValueAsText == "Right")
-                    {
-                        player.position.X += TILE_WIDTH;
-                        currentTile += 1;
-                    }
-                }
-                /*
-                if (message != null && message.MailboxTitle == "currentColor")
-                {
-                    if (currentColor != (int)message.ValueAsNumber)
-                    {
-                        player.position.X += TILE_WIDTH;
-                        currentTile += 1;
-                    }
-                    currentColor = (int)message.ValueAsNumber;
-                    Console.WriteLine(message.ValueAsNumber);
-                }
-                */
             }
             else
             {
