@@ -21,7 +21,7 @@ namespace Run4FunMonogame
 
         private int tileSpeed = 10;
 
-        private const string EV3_SERIAL_PORT = "COM5";
+        private const string EV3_SERIAL_PORT = "COM6";
 
         private const int playerWidth = 100, playerHeight = 100;
         private const int TILE_WIDTH = 230, TILE_HEIGHT = 500;
