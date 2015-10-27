@@ -30,6 +30,7 @@ namespace Run4FunMonogame
         private int currentTile;
         // The current tile the EV3 is on.
         private int currentTileEV3;
+        private int currentColor = (int)tileEV3.EV3_TILE_3;
 
         private int score = 0;
         private Player player;
@@ -44,7 +45,9 @@ namespace Run4FunMonogame
 
         private float spawnTime = 0;
         private int intensity = 1000;
-        private int currentColor = (int)tileEV3.EV3_TILE_3;
+        private int playerSpeed;
+        private int playerSpeedAcceleration = 10; // 10 or 23
+        private float newPositionX;
 
         public Run4FunGame()
         {
@@ -128,6 +131,10 @@ namespace Run4FunMonogame
                 addAndRemoveTiles();
             }
 
+            if (player.position.X == newPositionX)
+                playerSpeed = 0;
+            player.position.X += playerSpeed;
+
             base.Update(gameTime);
         }
 
@@ -140,16 +147,18 @@ namespace Run4FunMonogame
                 {
                     if (message.ValueAsText == "Left")
                     {
-                        player.position.X -= TILE_WIDTH;
-                        currentTile -= 1;
+                        //player.position.X -= TILE_WIDTH;
+                        //currentTile -= 1;
+                        moveLeft2();
                     }
                     else if (message.ValueAsText == "Right")
                     {
-                        player.position.X += TILE_WIDTH;
-                        currentTile += 1;
+                        //player.position.X += TILE_WIDTH;
+                        //currentTile += 1;
+                        moveRight2();
                     }
                 }
-                else if (message != null && message.MailboxTitle == "Color")
+                /*else if (message != null && message.MailboxTitle == "Color")
                 {
                     switch ((int)message.ValueAsNumber)
                     {
@@ -169,7 +178,7 @@ namespace Run4FunMonogame
                             Console.WriteLine("color 5: red");
                             break;
                     }
-                }
+                }*/
             }
         }
 
@@ -191,13 +200,17 @@ namespace Run4FunMonogame
             prevGamePadState = gamePadState;
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            if (leftKeyOrTriggerPressed())
+            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePc.TILE_1)
             {
-                moveLeft();
+                //moveLeft();
+                moveEV3Left();
+                //moveLeft2();
             }
-            else if (rightKeyOrTriggerPressed())
+            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePc.TILE_5)
             {
-                moveRight();
+                //moveRight();
+                moveEV3Right();
+                //moveRight2();
             }
             else if (aOrSpacePressed())
                 boost = !boost;
@@ -205,6 +218,20 @@ namespace Run4FunMonogame
             // Exit button.
             else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
                 Exit();
+        }
+
+        private void moveLeft2()
+        {
+            newPositionX = player.position.X - TILE_WIDTH;
+            playerSpeed -= playerSpeedAcceleration;
+            currentTile--;
+        }
+
+        private void moveRight2()
+        {
+            newPositionX = player.position.X + TILE_WIDTH;
+            playerSpeed += playerSpeedAcceleration;
+            currentTile++;
         }
 
         private void checkForCollisionAndDescentTiles()
@@ -218,6 +245,18 @@ namespace Run4FunMonogame
                 // Descend tiles.
                 tiles[i].position.Y += boost ? tileSpeed * 5 : tileSpeed;
             }
+        }
+
+        private void moveEV3Left()
+        {
+            if (ev3Messenger.IsConnected)
+                ev3Messenger.SendMessage("Move", "Left");
+        }
+
+        private void moveEV3Right()
+        {
+            if (ev3Messenger.IsConnected)
+                ev3Messenger.SendMessage("Move", "Right");
         }
 
         private void moveLeft()
@@ -249,15 +288,13 @@ namespace Run4FunMonogame
         private bool leftKeyOrTriggerPressed()
         {
             return ((gamePadState.Triggers.Left >= 0.5 && prevGamePadState.Triggers.Left < 0.5)
-                || (keyState.IsKeyDown(Keys.Left) && prevKeyState.IsKeyUp(Keys.Left)))
-                && currentTile > (int)tilePc.TILE_1;
+                || (keyState.IsKeyDown(Keys.Left) && prevKeyState.IsKeyUp(Keys.Left)));
         }
 
         private bool rightKeyOrTriggerPressed()
         {
             return ((gamePadState.Triggers.Right >= 0.5 && prevGamePadState.Triggers.Right < 0.5)
-                || (keyState.IsKeyDown(Keys.Right) && prevKeyState.IsKeyUp(Keys.Right)))
-                && currentTile < (int)tilePc.TILE_5;
+                || (keyState.IsKeyDown(Keys.Right) && prevKeyState.IsKeyUp(Keys.Right)));
         }
 
         private bool aOrSpacePressed()
@@ -317,7 +354,7 @@ namespace Run4FunMonogame
             spriteBatch.DrawString(font, "Score: ", new Vector2(text1X, 200), color1);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(text2X, 200), color2);
 
-            spriteBatch.DrawString(font, "Speed: ", new Vector2(text1X, 250), color1);
+            spriteBatch.DrawString(font, "Tile speed: ", new Vector2(text1X, 250), color1);
             spriteBatch.DrawString(font, tileSpeed.ToString(), new Vector2(text2X, 250), color2);
 
             spriteBatch.DrawString(font, "Boost: ", new Vector2(text1X, 300), color1);
