@@ -310,15 +310,16 @@ namespace Run4FunMonogame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Gold);
             
             spriteBatch.Begin();
 
             int text1X = 20;
             int text2X = 280;
 
-            Color color1 = Color.Red;
-            Color color2 = Color.Green;
+            Color color1 = Color.Black;
+            Color color2 = Color.Red;
 
             spriteBatch.DrawString(font, "Score: ", new Vector2(text1X, 200), color1);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(text2X, 200), color2);
