@@ -39,7 +39,7 @@ namespace Run4FunMonogame
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
 
-        private const bool collisionEnabled = false;
+        private const bool collisionEnabled = true;
         private bool boost = false; // boost/dash.
         private bool hyperMode = false; // hypermode, double score.
 
@@ -149,16 +149,16 @@ namespace Run4FunMonogame
                     {
                         //player.position.X -= TILE_WIDTH;
                         //currentTile -= 1;
-                        moveLeft2();
+                        moveLeftPc();
                     }
                     else if (message.ValueAsText == "Right")
                     {
                         //player.position.X += TILE_WIDTH;
                         //currentTile += 1;
-                        moveRight2();
+                        moveRightPc();
                     }
                 }
-                /*else if (message != null && message.MailboxTitle == "Color")
+                else if (message != null && message.MailboxTitle == "Color")
                 {
                     switch ((int)message.ValueAsNumber)
                     {
@@ -178,7 +178,7 @@ namespace Run4FunMonogame
                             Console.WriteLine("color 5: red");
                             break;
                     }
-                }*/
+                }
             }
         }
 
@@ -201,17 +201,9 @@ namespace Run4FunMonogame
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
             if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePc.TILE_1)
-            {
-                //moveLeft();
-                moveEV3Left();
-                //moveLeft2();
-            }
+                moveLeft();
             else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePc.TILE_5)
-            {
-                //moveRight();
-                moveEV3Right();
-                //moveRight2();
-            }
+                moveRight();
             else if (aOrSpacePressed())
                 boost = !boost;
 
@@ -220,14 +212,14 @@ namespace Run4FunMonogame
                 Exit();
         }
 
-        private void moveLeft2()
+        private void moveLeftPc()
         {
             newPositionX = player.position.X - TILE_WIDTH;
             playerSpeed -= playerSpeedAcceleration;
             currentTile--;
         }
 
-        private void moveRight2()
+        private void moveRightPc()
         {
             newPositionX = player.position.X + TILE_WIDTH;
             playerSpeed += playerSpeedAcceleration;
@@ -247,42 +239,20 @@ namespace Run4FunMonogame
             }
         }
 
-        private void moveEV3Left()
-        {
-            if (ev3Messenger.IsConnected)
-                ev3Messenger.SendMessage("Move", "Left");
-        }
-
-        private void moveEV3Right()
-        {
-            if (ev3Messenger.IsConnected)
-                ev3Messenger.SendMessage("Move", "Right");
-        }
-
         private void moveLeft()
         {
             if (ev3Messenger.IsConnected)
-            {
                 ev3Messenger.SendMessage("Move", "Left");
-            }
             else
-            {
-                player.position.X -= TILE_WIDTH;
-                currentTile -= 1;
-            }
+                moveLeftPc();
         }
 
         private void moveRight()
         {
             if (ev3Messenger.IsConnected)
-            {
                 ev3Messenger.SendMessage("Move", "Right");
-            }
             else
-            {
-                player.position.X += TILE_WIDTH;
-                currentTile += 1;
-            }
+                moveRightPc();
         }
 
         private bool leftKeyOrTriggerPressed()
@@ -341,8 +311,7 @@ namespace Run4FunMonogame
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // Add drawing code here
+            
             spriteBatch.Begin();
 
             int text1X = 20;

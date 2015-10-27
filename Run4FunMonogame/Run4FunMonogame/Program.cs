@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace Run4FunMonogame
 {
@@ -14,8 +15,13 @@ namespace Run4FunMonogame
         [STAThread]
         static void Main()
         {
+            Form form = new StartForm();
+            form.ShowDialog();
+
+            /*
             using (var game = new Run4FunGame())
                 game.Run();
+            */
         }
     }
 #endif
