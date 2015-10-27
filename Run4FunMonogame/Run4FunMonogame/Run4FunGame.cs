@@ -147,14 +147,10 @@ namespace Run4FunMonogame
                 {
                     if (message.ValueAsText == "Left")
                     {
-                        //player.position.X -= TILE_WIDTH;
-                        //currentTile -= 1;
                         moveLeftPc();
                     }
                     else if (message.ValueAsText == "Right")
                     {
-                        //player.position.X += TILE_WIDTH;
-                        //currentTile += 1;
                         moveRightPc();
                     }
                 }
@@ -344,6 +340,10 @@ namespace Run4FunMonogame
             base.Draw(gameTime);
         }
 
+        /// <summary>
+        /// Generates random position for tiles.
+        /// </summary>
+        /// <returns></returns>
         private Vector2 generateTilePosition()
         {
             Random random = new Random();
