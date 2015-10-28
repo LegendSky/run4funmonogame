@@ -47,7 +47,7 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0;
+        private int oneSecondTimer = 0, oneAndAHalfSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0;
 
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
@@ -150,8 +150,6 @@ namespace Run4Fun
             if (oneSecondTimer >= 1000)
             {
                 oneSecondTimer = 0;
-                addAndRemoveTiles();
-
                 if (colorEventEnabled)
                 {
                     if (colorBoostCountDown <= 0)
@@ -159,6 +157,14 @@ namespace Run4Fun
                     else
                         colorBoostCountDown--;
                 }
+            }
+
+            // Every 1.5 seconds.
+            oneAndAHalfSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (oneAndAHalfSecondTimer >= 1500)
+            {
+                oneAndAHalfSecondTimer = 0;
+                addAndRemoveTiles();
             }
 
             // Every 20 seconds.
