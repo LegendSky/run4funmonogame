@@ -47,7 +47,7 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0, tileSpeedTime = 0;
+        private int oneSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0;
 
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
@@ -168,7 +168,6 @@ namespace Run4Fun
                 twentySecondTimer = 0;
                 colorBoostEvent();
 
-                tileSpeedTime = 0;
                 tileSpeed++;
             }
 
