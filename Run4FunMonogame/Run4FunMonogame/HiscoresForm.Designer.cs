@@ -37,7 +37,7 @@
             this.BackgroundImage = global::Run4Fun.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(822, 535);
             this.Name = "HiscoresForm";
-            this.Text = "HiscoresForm";
+            this.Text = "Run4Fun Hiscores";
             this.ResumeLayout(false);
 
         }
