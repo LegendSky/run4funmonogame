@@ -63,10 +63,11 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>23DA9DBBC8AB18EB27D625A7511CD9C6DDA84707</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>566AA0EAEACD94331FFBD4E03FA4D7E594085CA5</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Run4FunMonogame_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
