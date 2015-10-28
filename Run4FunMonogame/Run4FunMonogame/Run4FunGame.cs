@@ -36,7 +36,7 @@ namespace Run4Fun
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
 
-        Random random = new Random();
+        private Random random = new Random();
 
         private const bool collisionEnabled = true;
         private bool hyperMode = false; // hypermode, double score.
