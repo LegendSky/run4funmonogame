@@ -15,11 +15,15 @@ namespace Run4Fun
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+
+        private SpriteFont smallfont;
         private SpriteFont font;
         private SpriteFont bigfont;
         private SpriteFont hugefont;
+
         private KeyboardState prevKeyState, keyState;
         private GamePadState prevGamePadState, gamePadState;
+        private Texture2D backgroundImage;
 
         private int tileSpeed = 8;
 
@@ -32,6 +36,7 @@ namespace Run4Fun
         private int currentTile;
 
         private int score = 0;
+        private int level = 1;
         private Player player;
         private List<Tile> tiles = new List<Tile>();
 
@@ -54,6 +59,11 @@ namespace Run4Fun
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
         private int newPositionX;
+
+        private Color colorText = Color.Black;
+        private Color colorTextNumber = Color.Black;
+        private Color colorTile = Color.Gray;
+        private Color colorPlayer = Color.Black;
 
         public Run4FunGame()
         {
@@ -92,7 +102,10 @@ namespace Run4Fun
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            backgroundImage = Content.Load<Texture2D>("background");
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((WINDOW_WIDTH / 2) - (playerWidth / 2), WINDOW_HEIGHT - 200));
+
+            smallfont = Content.Load<SpriteFont>("smallfont");
             font = Content.Load<SpriteFont>("font");
             bigfont = Content.Load<SpriteFont>("bigfont");
             hugefont = Content.Load<SpriteFont>("hugefont");
@@ -178,7 +191,7 @@ namespace Run4Fun
                 twentySecondTimer = 0;
                 colorBoostEvent();
 
-                tileSpeed++;
+                nextLevel();
             }
 
             if (player.position.X == newPositionX)
@@ -186,6 +199,12 @@ namespace Run4Fun
             player.position.X += playerSpeed;
 
             base.Update(gameTime);
+        }
+
+        private void nextLevel()
+        {
+            level++;
+            tileSpeed++;
         }
 
         private void resetColorBoost()
@@ -392,46 +411,6 @@ namespace Run4Fun
             score++;
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime)
-        {
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
-            GraphicsDevice.Clear(Color.Gray);
-
-            spriteBatch.Begin();
-
-            drawRedTwoTextsAt10XAnd180X("Score: ", score.ToString(), 300);
-            //drawRedTwoTextsAt20XAnd260X("Tile speed: ", tileSpeed.ToString(), 250);
-            //drawRedTwoTextsAt20XAnd260X("Hypermode: ", hyperMode ? "On" : "Off", 300);
-            //drawRedTwoTextsAt20XAnd260X("Boost: ", boostEnabled ? "On" : "Off", 350);
-            drawBlackTextAt10X("Boost: ", 400);
-            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 500), Color.Gold);
-
-            //drawRedTwoTextsAt20XAnd260X("Color event: ", colorEventEnabled ? "On" : "Off", 500);
-            //drawRedTwoTextsAt20XAnd260X("Color for boost: ", convertColorNumberToString(colorForBoost), 550);
-
-            spriteBatch.Draw(player.image, player.position, Color.White);
-
-            // Draw tiles.
-            foreach (Tile tile in tiles)
-                spriteBatch.Draw(tile.image, tile.position, Color.White);
-
-            if (colorEventEnabled)
-            {
-                if (ev3Messenger.IsConnected)
-                    spriteBatch.DrawString(bigfont, "BOOST ON " + convertColorNumberToString(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
-                else
-                    spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
-            }
-
-            spriteBatch.End();
-
-            base.Draw(gameTime);
-        }
-
         private Color colorEventColor()
         {
             Color color;
@@ -508,17 +487,6 @@ namespace Run4Fun
             return color;
         }
 
-        private void drawBlackTextAt10X(string text, int y)
-        {
-            spriteBatch.DrawString(font, text, new Vector2(10, y), Color.Black);
-        }
-
-        private void drawRedTwoTextsAt10XAnd180X(string text1, string text2, int y)
-        {
-            drawBlackTextAt10X(text1, y);
-            spriteBatch.DrawString(font, text2, new Vector2(180, y), Color.Gold);
-        }
-
         /// <summary>
         /// Generates random position for tiles.
         /// </summary>
@@ -554,6 +522,48 @@ namespace Run4Fun
             //Console.WriteLine("x: " + x + " y: " + y);
 
             return new Vector2(x, y);
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.White);
+
+            spriteBatch.Begin();
+
+            // Draw background
+            spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
+            
+            spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), colorText);
+            spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), colorTextNumber);
+
+            spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), colorText);
+            spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), colorTextNumber);
+
+            spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), colorText);
+            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), colorTextNumber);
+
+            spriteBatch.Draw(player.image, player.position, colorPlayer);
+
+            // Draw tiles.
+            foreach (Tile tile in tiles)
+                spriteBatch.Draw(tile.image, tile.position, colorTile);
+
+            if (colorEventEnabled)
+            {
+                if (ev3Messenger.IsConnected)
+                    spriteBatch.DrawString(bigfont, "BOOST ON " + convertColorNumberToString(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+                else
+                    spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+            }
+
+            spriteBatch.End();
+
+            base.Draw(gameTime);
         }
     }
 }
