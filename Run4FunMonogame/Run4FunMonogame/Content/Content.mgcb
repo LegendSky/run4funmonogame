@@ -52,3 +52,15 @@
 /processorParam:TextureFormat=Compressed
 /build:font.spritefont
 
+#begin bigfont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:bigfont.spritefont
+
+#begin hugefont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:hugefont.spritefont
+

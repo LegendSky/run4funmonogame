@@ -16,6 +16,8 @@ namespace Run4Fun
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private SpriteFont font;
+        private SpriteFont bigfont;
+        private SpriteFont hugefont;
         private KeyboardState prevKeyState, keyState;
         private GamePadState prevGamePadState, gamePadState;
 
@@ -42,7 +44,7 @@ namespace Run4Fun
         private bool hyperMode = false; // hypermode, double score.
 
         private bool boostEnabled = false; // boost/dash.
-        private int boostAmount = 0;
+        private int boostAmount = 10;
         private int colorForBoost;
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
@@ -92,6 +94,8 @@ namespace Run4Fun
 
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((WINDOW_WIDTH / 2) - (playerWidth / 2), WINDOW_HEIGHT - 200));
             font = Content.Load<SpriteFont>("font");
+            bigfont = Content.Load<SpriteFont>("bigfont");
+            hugefont = Content.Load<SpriteFont>("hugefont");
         }
 
         /// <summary>
@@ -395,21 +399,19 @@ namespace Run4Fun
         protected override void Draw(GameTime gameTime)
         {
             //GraphicsDevice.Clear(Color.CornflowerBlue);
-            GraphicsDevice.Clear(Color.Gold);
+            GraphicsDevice.Clear(Color.Gray);
 
             spriteBatch.Begin();
 
-            drawTwoTextsAt20XAnd260X("Score: ", score.ToString(), 200);
-            drawTwoTextsAt20XAnd260X("Tile speed: ", tileSpeed.ToString(), 250);
-            drawTwoTextsAt20XAnd260X("Hypermode: ", hyperMode ? "On" : "Off", 300);
-            drawTwoTextsAt20XAnd260X("Boost: ", boostEnabled ? "On" : "Off", 350);
-            drawTwoTextsAt20XAnd260X("Boost amount: ", boostAmount.ToString(), 400);
+            drawRedTwoTextsAt10XAnd180X("Score: ", score.ToString(), 300);
+            //drawRedTwoTextsAt20XAnd260X("Tile speed: ", tileSpeed.ToString(), 250);
+            //drawRedTwoTextsAt20XAnd260X("Hypermode: ", hyperMode ? "On" : "Off", 300);
+            //drawRedTwoTextsAt20XAnd260X("Boost: ", boostEnabled ? "On" : "Off", 350);
+            drawBlackTextAt10X("Boost: ", 400);
+            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 500), Color.Gold);
 
-            drawTwoTextsAt20XAnd260X("Color event: ", colorEventEnabled ? "On" : "Off", 500);
-            drawTwoTextsAt20XAnd260X("Color for boost: ", convertColorNumberToString(colorForBoost), 550);
-
-            drawBlackTextAt20X("Time left", 650);
-            drawTwoTextsAt20XAnd260X("to take boost: ", colorEventEnabled ? colorBoostCountDown.ToString() + "s" : "-", 700);
+            //drawRedTwoTextsAt20XAnd260X("Color event: ", colorEventEnabled ? "On" : "Off", 500);
+            //drawRedTwoTextsAt20XAnd260X("Color for boost: ", convertColorNumberToString(colorForBoost), 550);
 
             spriteBatch.Draw(player.image, player.position, Color.White);
 
@@ -417,9 +419,44 @@ namespace Run4Fun
             foreach (Tile tile in tiles)
                 spriteBatch.Draw(tile.image, tile.position, Color.White);
 
+            if (colorEventEnabled)
+            {
+                if (ev3Messenger.IsConnected)
+                    spriteBatch.DrawString(bigfont, "BOOST ON " + convertColorNumberToString(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+                else
+                    spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private Color colorEventColor()
+        {
+            Color color;
+            switch (colorForBoost)
+            {
+                case 1:
+                    color = Color.Black;
+                    break;
+                case 2:
+                    color = Color.Blue;
+                    break;
+                case 3:
+                    color = Color.Green;
+                    break;
+                case 4:
+                    color = Color.Yellow;
+                    break;
+                case 5:
+                    color = Color.Red;
+                    break;
+                default:
+                    color = Color.Black;
+                    break;
+            }
+            return color;
         }
 
         private string convertColorNumberToString(int colorNumber)
@@ -471,15 +508,15 @@ namespace Run4Fun
             return color;
         }
 
-        private void drawBlackTextAt20X(string text, int y)
+        private void drawBlackTextAt10X(string text, int y)
         {
             spriteBatch.DrawString(font, text, new Vector2(10, y), Color.Black);
         }
 
-        private void drawTwoTextsAt20XAnd260X(string text1, string text2, int y)
+        private void drawRedTwoTextsAt10XAnd180X(string text1, string text2, int y)
         {
-            drawBlackTextAt20X(text1, y);
-            spriteBatch.DrawString(font, text2, new Vector2(260, y), Color.Red);
+            drawBlackTextAt10X(text1, y);
+            spriteBatch.DrawString(font, text2, new Vector2(180, y), Color.Gold);
         }
 
         /// <summary>
