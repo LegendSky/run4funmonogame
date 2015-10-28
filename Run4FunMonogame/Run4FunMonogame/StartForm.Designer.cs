@@ -1,4 +1,4 @@
-﻿namespace Run4FunMonogame
+﻿namespace Run4Fun
 {
     partial class StartForm
     {
@@ -37,7 +37,7 @@
             // 
             this.hiscoresButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.hiscoresButton.Font = new System.Drawing.Font("Impact", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.hiscoresButton.Image = global::Run4FunMonogame.Properties.Resources.hiscores_button_off;
+            this.hiscoresButton.Image = global::Run4Fun.Properties.Resources.hiscores_button_off;
             this.hiscoresButton.Location = new System.Drawing.Point(1200, 400);
             this.hiscoresButton.Name = "hiscoresButton";
             this.hiscoresButton.Size = new System.Drawing.Size(330, 162);
@@ -52,7 +52,7 @@
             // 
             this.quitButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.quitButton.Font = new System.Drawing.Font("Impact", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.quitButton.Image = global::Run4FunMonogame.Properties.Resources.quit_button_off;
+            this.quitButton.Image = global::Run4Fun.Properties.Resources.quit_button_off;
             this.quitButton.Location = new System.Drawing.Point(1200, 600);
             this.quitButton.Name = "quitButton";
             this.quitButton.Size = new System.Drawing.Size(330, 162);
@@ -67,7 +67,7 @@
             // 
             this.runButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.runButton.Font = new System.Drawing.Font("Impact", 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.runButton.Image = global::Run4FunMonogame.Properties.Resources.run_button_off;
+            this.runButton.Image = global::Run4Fun.Properties.Resources.run_button_off;
             this.runButton.Location = new System.Drawing.Point(1200, 200);
             this.runButton.Name = "runButton";
             this.runButton.Size = new System.Drawing.Size(330, 162);
@@ -82,7 +82,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::Run4FunMonogame.Properties.Resources.bg;
+            this.BackgroundImage = global::Run4Fun.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.Controls.Add(this.runButton);
             this.Controls.Add(this.quitButton);

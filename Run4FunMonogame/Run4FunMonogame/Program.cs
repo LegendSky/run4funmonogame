@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Run4FunMonogame
+namespace Run4Fun
 {
 #if WINDOWS || LINUX
     /// <summary>

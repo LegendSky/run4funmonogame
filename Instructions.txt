@@ -1,0 +1,19 @@
+Holes
+- Every 20 seconds the intensity increases, which means more frequent hole spawns.
+
+Color event
+- Happens every 20 seconds.
+- You get 5 seconds to be on the right lane to take your boost.
+
+Boost/Dash
+- Every time you take a boost your boost amount increases by 20.
+- When you use boost, your boost amount decreases by time till it reaches 0, you can also stop your boost to save some for later.
+- You are immune for holes.
+
+Score
+- Score increases by time.
+- Taking a boost will get you +5000 score instantly.
+
+Controls
+- Keyboard: left arrow, right arrow and space for boost.
+- Xbox 360 controller: left trigger, right trigger and A for boost.

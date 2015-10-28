@@ -2,11 +2,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Run4FunMonogame.Sprites;
+using Run4Fun.Sprites;
 using System;
 using System.Collections.Generic;
 
-namespace Run4FunMonogame
+namespace Run4Fun
 {
     /// <summary>
     /// Run4Fun game by A4B 2015.
@@ -19,18 +19,15 @@ namespace Run4FunMonogame
         private KeyboardState prevKeyState, keyState;
         private GamePadState prevGamePadState, gamePadState;
 
-        private int tileSpeed = 10;
+        private int tileSpeed = 8;
 
         private const string EV3_SERIAL_PORT = "COM6";
 
         private const int playerWidth = 100, playerHeight = 100;
         private const int TILE_WIDTH = 230, TILE_HEIGHT = 500, WINDOW_WIDTH = 1920, WINDOW_HEIGHT = 1080;
 
-        // The current tile the pc is on.
+        // The current tile the player is on.
         private int currentTile;
-        // The current tile the EV3 is on.
-        private int currentTileEV3;
-        private int currentColor = (int)tileEV3.EV3_TILE_3;
 
         private int score = 0;
         private Player player;
@@ -39,6 +36,8 @@ namespace Run4FunMonogame
         // EV3: The EV3Messenger is used to communicate with the Lego EV3
         private EV3Messenger ev3Messenger;
 
+        Random random = new Random();
+
         private const bool collisionEnabled = true;
         private bool hyperMode = false; // hypermode, double score.
 
@@ -46,14 +45,13 @@ namespace Run4FunMonogame
         private int boostAmount = 0;
         private int colorForBoost;
         private bool colorEventEnabled = false;
+        private int colorBoostCountDown = 5;
 
-        private int spawnTime = 0;
-        private int randomTime = 0;
-        private int boostTime = 0;
+        private int oneSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0, tileSpeedTime = 0;
 
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
-        private float newPositionX;
+        private int newPositionX;
 
         public Run4FunGame()
         {
@@ -78,8 +76,7 @@ namespace Run4FunMonogame
         /// </summary>
         protected override void Initialize()
         {
-            currentTile = (int)tilePc.TILE_3;
-            currentTileEV3 = (int)tileEV3.EV3_TILE_3;
+            currentTile = (int)tilePlayer.TILE_3;
 
             base.Initialize();
         }
@@ -134,34 +131,45 @@ namespace Run4FunMonogame
             if (!ev3Messenger.IsConnected && colorEventEnabled)
                 checkColorLane();
 
-            // Decrease boost amount when enabled.
-            boostTime += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            // Every tenth second.
+            tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (boostEnabled)
             {
                 if (boostAmount <= 0)
                     boostEnabled = false;
 
-                if (boostTime >= 100)
+                if (tenthSecondTimer >= 100)
                 {
-                    boostTime = 0;
+                    tenthSecondTimer = 0;
                     boostAmount--;
-                }  
+                }
             }
 
-            // Add and remove tiles, every second.
-            spawnTime += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (spawnTime >= 1000)
+            // Every second.
+            oneSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (oneSecondTimer >= 1000)
             {
-                spawnTime = 0;
+                oneSecondTimer = 0;
                 addAndRemoveTiles();
+
+                if (colorEventEnabled)
+                {
+                    if (colorBoostCountDown <= 0)
+                        resetColorBoost();
+                    else
+                        colorBoostCountDown--;
+                }
             }
 
-            // Every 10 seconds, create a random color event.
-            randomTime += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (randomTime >= 10000)
+            // Every 20 seconds.
+            twentySecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (twentySecondTimer >= 20000)
             {
-                randomTime = 0;
+                twentySecondTimer = 0;
                 colorBoostEvent();
+
+                tileSpeedTime = 0;
+                tileSpeed++;
             }
 
             if (player.position.X == newPositionX)
@@ -171,20 +179,28 @@ namespace Run4FunMonogame
             base.Update(gameTime);
         }
 
+        private void resetColorBoost()
+        {
+            colorEventEnabled = false;
+            colorBoostCountDown = 5;
+            colorForBoost = 0;
+        }
+
         private void checkColorLane()
         {
             if (colorForBoost == currentTile)
-            {
-                boostAmount += 20;
-                colorEventEnabled = false;
-                colorForBoost = 0;
-            }
+                addBoostAndScoreAndReset();
         }
 
         private void colorBoostEvent()
         {
             Random random = new Random();
             colorForBoost = random.Next(1, 6);
+
+            // Boost shouldn't be on player's position.
+            while (colorForBoost == player.position.X)
+                colorForBoost = random.Next(1, 6);
+
             colorEventEnabled = true;
         }
 
@@ -196,22 +212,14 @@ namespace Run4FunMonogame
                 if (message != null && message.MailboxTitle == "Command")
                 {
                     if (message.ValueAsText == "Left")
-                    {
                         moveLeftPc();
-                    }
                     else if (message.ValueAsText == "Right")
-                    {
                         moveRightPc();
-                    }
                 }
                 else if (message != null && message.MailboxTitle == "Color")
                 {
                     if (colorEventEnabled && colorForBoost == message.ValueAsNumber) //TODO: make it give points only once!
-                    {
-                        boostAmount += 20;
-                        colorEventEnabled = false;
-                        colorForBoost = 0;
-                    }
+                        addBoostAndScoreAndReset();
                     /*
                     switch ((int)message.ValueAsNumber)
                     {
@@ -245,6 +253,13 @@ namespace Run4FunMonogame
             }
         }
 
+        private void addBoostAndScoreAndReset()
+        {
+            boostAmount += 20;
+            score += 5000;
+            resetColorBoost();
+        }
+
         private void addAndRemoveTiles()
         {
             tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
@@ -263,9 +278,9 @@ namespace Run4FunMonogame
             prevGamePadState = gamePadState;
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePc.TILE_1)
+            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1)
                 moveLeft();
-            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePc.TILE_5)
+            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5)
                 moveRight();
             else if (aOrSpacePressed())
             {
@@ -282,14 +297,14 @@ namespace Run4FunMonogame
 
         private void moveLeftPc()
         {
-            newPositionX = player.position.X - TILE_WIDTH;
+            newPositionX = (int)player.position.X - TILE_WIDTH;
             playerSpeed -= playerSpeedAcceleration;
             currentTile--;
         }
 
         private void moveRightPc()
         {
-            newPositionX = player.position.X + TILE_WIDTH;
+            newPositionX = (int)player.position.X + TILE_WIDTH;
             playerSpeed += playerSpeedAcceleration;
             currentTile++;
         }
@@ -346,22 +361,13 @@ namespace Run4FunMonogame
                 || (keyState.IsKeyDown(Keys.Space) && prevKeyState.IsKeyUp(Keys.Space)));
         }
 
-        private enum tilePc
+        private enum tilePlayer
         {
-            TILE_1 = 1,
-            TILE_2 = 2,
-            TILE_3 = 3,
-            TILE_4 = 4,
-            TILE_5 = 5
-        }
-
-        private enum tileEV3
-        {
-            EV3_TILE_1 = 1,// black
-            EV3_TILE_2 = 2,// blue
-            EV3_TILE_3 = 3,// green
-            EV3_TILE_4 = 4,// yellow
-            EV3_TILE_5 = 5// red
+            TILE_1 = 1, // Black
+            TILE_2 = 2, // Blue
+            TILE_3 = 3, // Green
+            TILE_4 = 4, // Yellow
+            TILE_5 = 5 // Red
         }
 
         private bool playerAndTileCollide(Player player, Tile tile)
@@ -374,7 +380,7 @@ namespace Run4FunMonogame
 
         private void increaseScore()
         {
-            score += 1;
+            score++;
         }
 
         /// <summary>
@@ -388,14 +394,17 @@ namespace Run4FunMonogame
 
             spriteBatch.Begin();
 
-            drawTwoTextsAt20And280("Score: ", score.ToString(), 200);
-            drawTwoTextsAt20And280("Tile speed: ", tileSpeed.ToString(), 250);
-            drawTwoTextsAt20And280("Hypermode: ", hyperMode ? "On" : "Off", 300);
-            drawTwoTextsAt20And280("Boost: ", boostEnabled ? "On" : "Off", 350);
-            drawTwoTextsAt20And280("Boost amount: ", boostAmount.ToString(), 400);
+            drawTwoTextsAt20XAnd260X("Score: ", score.ToString(), 200);
+            drawTwoTextsAt20XAnd260X("Tile speed: ", tileSpeed.ToString(), 250);
+            drawTwoTextsAt20XAnd260X("Hypermode: ", hyperMode ? "On" : "Off", 300);
+            drawTwoTextsAt20XAnd260X("Boost: ", boostEnabled ? "On" : "Off", 350);
+            drawTwoTextsAt20XAnd260X("Boost amount: ", boostAmount.ToString(), 400);
 
-            drawTwoTextsAt20And280("Color event: ", colorEventEnabled ? "On" : "Off", 600);
-            drawTwoTextsAt20And280("Color for boost: ", colorForBoost.ToString(), 650);
+            drawTwoTextsAt20XAnd260X("Color event: ", colorEventEnabled ? "On" : "Off", 500);
+            drawTwoTextsAt20XAnd260X("Color for boost: ", convertColorNumberToString(colorForBoost), 550);
+
+            drawBlackTextAt20X("Time left", 650);
+            drawTwoTextsAt20XAnd260X("to take boost: ", colorEventEnabled ? colorBoostCountDown.ToString() + "s" : "-", 700);
 
             spriteBatch.Draw(player.image, player.position, Color.White);
 
@@ -408,15 +417,64 @@ namespace Run4FunMonogame
             base.Draw(gameTime);
         }
 
+        private string convertColorNumberToString(int colorNumber)
+        {
+            string color = "-";
+            if (ev3Messenger.IsConnected)
+            {
+                switch (colorNumber)
+                {
+                    case 1:
+                        color = "Black";
+                        break;
+                    case 2:
+                        color = "Blue";
+                        break;
+                    case 3:
+                        color = "Green";
+                        break;
+                    case 4:
+                        color = "Yellow";
+                        break;
+                    case 5:
+                        color = "Red";
+                        break;
+                }
+            }
+            else
+            {
+                switch (colorNumber)
+                {
+                    case 1:
+                        color = "Black(1)";
+                        break;
+                    case 2:
+                        color = "Blue(2)";
+                        break;
+                    case 3:
+                        color = "Green(3)";
+                        break;
+                    case 4:
+                        color = "Yellow(4)";
+                        break;
+                    case 5:
+                        color = "Red(5)";
+                        break;
+
+                }
+            }
+            return color;
+        }
+
         private void drawBlackTextAt20X(string text, int y)
         {
             spriteBatch.DrawString(font, text, new Vector2(10, y), Color.Black);
         }
 
-        private void drawTwoTextsAt20And280(string text1, string text2, int y)
+        private void drawTwoTextsAt20XAnd260X(string text1, string text2, int y)
         {
             drawBlackTextAt20X(text1, y);
-            spriteBatch.DrawString(font, text2, new Vector2(280, y), Color.Red);
+            spriteBatch.DrawString(font, text2, new Vector2(260, y), Color.Red);
         }
 
         /// <summary>
@@ -425,7 +483,6 @@ namespace Run4FunMonogame
         /// <returns></returns>
         private Vector2 generateTilePosition()
         {
-            Random random = new Random();
             int randomNumber = random.Next(5);
             int middleTileX = (WINDOW_WIDTH / 2) - (TILE_WIDTH / 2);
             int x;

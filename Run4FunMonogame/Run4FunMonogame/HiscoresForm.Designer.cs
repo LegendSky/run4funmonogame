@@ -1,4 +1,4 @@
-﻿namespace Run4FunMonogame
+﻿namespace Run4Fun
 {
     partial class HiscoresForm
     {
@@ -34,7 +34,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::Run4FunMonogame.Properties.Resources.bg;
+            this.BackgroundImage = global::Run4Fun.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(822, 535);
             this.Name = "HiscoresForm";
             this.Text = "HiscoresForm";

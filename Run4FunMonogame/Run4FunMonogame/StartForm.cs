@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Run4FunMonogame
+namespace Run4Fun
 {
     public partial class StartForm : Form
     {
