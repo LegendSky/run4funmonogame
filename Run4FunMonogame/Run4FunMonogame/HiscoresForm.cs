@@ -1,139 +1,112 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.IO.IsolatedStorage;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Run4Fun
 {
     public partial class HiscoresForm : Form
     {
-        public List<string> scores = new List<string>(10);
-        public int score = 0;
-        private const string fileName = "test.txt";
+        private List<string> hiscores = new List<string>(10);
+        private const string fileName = "hiscores.txt";
 
         public HiscoresForm()
         {
             InitializeComponent();
 
-            for (int i = 0; i < 10; i++)
+            if (!File.Exists(fileName))
             {
-                scores.Add("-");
+                StreamWriter sw = new StreamWriter(fileName);
+                sw.Close();
             }
+
+            convertTxtToList();
         }
 
-        public HiscoresForm(int score)
+        public HiscoresForm(int score) : this()
         {
-            InitializeComponent();
-
-            /*for (int i = 0; i < 10; i++)
-            {
-                scores.Add("-");
-            }*/
-
-            scores.Add("score: " + score);
-
-
+            writeNewHiscoreToTxt(tbUsername.Text, Convert.ToInt32(tbScore.Text));
+            convertTxtToList();
         }
 
-        private void btnCreate_Click(object sender, EventArgs e)
+        private void btnConfirm_Click(object sender, EventArgs e)
+        {
+            writeNewHiscoreToTxt(tbUsername.Text, Convert.ToInt32(tbScore.Text));
+            convertTxtToList();
+        }
+
+        private void clearTxtFile()
         {
             StreamWriter sw = new StreamWriter(fileName);
-            //sw.Write("First line");
-            //sw.Write("Second line");
-            //sw.WriteLine("gewagwea");
-            //sw.WriteLine("geawgawe");
             sw.Close();
         }
 
-        private void btnRead_Click(object sender, EventArgs e)
+        private void writeNewHiscoreToTxt(string name, int score)
+        {
+            StreamWriter sw = new StreamWriter(fileName, true);
+            sw.WriteLine(name + " " + score);
+            sw.Close();
+        }
+
+        private void convertTxtToList()
         {
             StreamReader sr = new StreamReader(fileName);
+        
+            hiscores.Clear();
+
             while (sr.Peek() >= 0)
             {
-                hiscoresListBox.Items.Add(sr.ReadLine());
-            }
-        }
-
-        private void btnYiss_Click(object sender, EventArgs e)
-        {
-            StreamReader sr = new StreamReader(fileName);
-            while (sr.Peek() >= 0)
-            {
-                scores.Add(sr.ReadLine());
-            }
-        }
-
-        public void SaveHighScore()
-        {
-            //if (score > scores[9])
-            //    scores[9] = score;
-
-            scores.Sort();
-            scores.Reverse();
-
-            IsolatedStorageFile highScoreStorage = IsolatedStorageFile.GetUserStoreForDomain();
-
-            IsolatedStorageFileStream userDataFile = new IsolatedStorageFileStream(fileName, FileMode.OpenOrCreate, highScoreStorage);
-
-            // create a writer to the stream...
-            StreamWriter writeStream = new StreamWriter(userDataFile);
-
-            // write strings to the Isolated Storage file...
-            for (int i = 0; i < 10; i++)
-            {
-                writeStream.WriteLine(scores[i].ToString());
+                string line = sr.ReadLine();
+                hiscores.Add(line);
             }
 
-            // Tidy up by flushing the stream buffer and then closing
-            // the streams...
-            writeStream.Flush();
-            writeStream.Close();
-            userDataFile.Close();
+            sortList();
+
+            hiscoresListBox.Items.Clear();
+
+            for(int i = 0; i < hiscores.Count; i++)
+            {
+                string[] array = hiscores[i].Split(' ');
+                hiscoresListBox.Items.Add(i + 1 + ". " + array[0].PadRight(15) + array[1]);
+            }
+
+            sr.Close();
         }
 
-        public void LoadHighScore()
+        private void sortList()
         {
-            if (System.IO.File.Exists(fileName))
-            {
-                IsolatedStorageFile highScoreStorage = IsolatedStorageFile.GetUserStoreForDomain();
+            List<string> sortedList = new List<string>();
 
-                if (highScoreStorage.FileExists(fileName))
+            while (hiscores.Count > 0)
+            {     
+                sortedList.Add(findMaxValueInList(hiscores));
+                hiscores.Remove(findMaxValueInList(hiscores));
+            }
+
+            hiscores = sortedList;
+        }
+
+        private string findMaxValueInList(List<string> list)
+        {
+            string highestText = list[0];
+            int highest = getScoreFromHiscore(list[0]);
+            foreach (string text in list)
+            {
+                int score = getScoreFromHiscore(text);
+                if (score >= highest)
                 {
-                    IsolatedStorageFileStream userDataFile = new IsolatedStorageFileStream(fileName, FileMode.Open, highScoreStorage);
-
-                    // create a reader to the stream...
-                    StreamReader readStream = new StreamReader(userDataFile);
-
-                    for (int i = 0; i < 10; i++)
-                    {
-                        //scores[i] = Convert.ToInt32(readStream.ReadLine());
-                    }
-
-                    scores.Sort();
-                    scores.Reverse();
-
-                    // Tidy up by closing the streams...
-                    readStream.Close();
-                    userDataFile.Close();
-                }
-                else
-                {
-                    SaveHighScore();
+                    highest = score;
+                    highestText = text;
                 }
             }
-            else
-            {
-                System.IO.File.Create(fileName);
+            return highestText;
 
-                SaveHighScore();
-            }
+        }
 
+        private int getScoreFromHiscore(string hiscore)
+        {
+            string[] array = hiscore.Split(' ');
+            return Convert.ToInt32(array[1]);
         }
 
         private void HiscoresForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -141,6 +114,12 @@ namespace Run4Fun
             Hide();
             new StartForm().ShowDialog();
             Close();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            clearTxtFile();
+            convertTxtToList();
         }
     }
 }
