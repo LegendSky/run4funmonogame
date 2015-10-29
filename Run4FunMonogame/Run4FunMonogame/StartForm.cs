@@ -26,6 +26,7 @@ namespace Run4Fun
         {
             Hide();
             new Run4FunGame().Run();
+            Close();
         }
         private void runButton_MouseEnter(object sender, EventArgs e)
         {
@@ -46,9 +47,9 @@ namespace Run4Fun
         // Start of hiscores button methods.
         private void hiscoresButton_Click(object sender, EventArgs e)
         {
-            //Hide();
-            Form hiscoresForm = new HiscoresForm();
-            hiscoresForm.Show();
+            Hide();
+            new HiscoresForm().ShowDialog();
+            Close();
         }
 
         private void hiscoresButton_MouseEnter(object sender, EventArgs e)
@@ -68,7 +69,7 @@ namespace Run4Fun
         // Start of quit button methods.
         private void quitButton_Click(object sender, EventArgs e)
         {
-            Close();
+            Application.Exit();
         }
 
         private void quitButton_MouseEnter(object sender, EventArgs e)
@@ -84,6 +85,11 @@ namespace Run4Fun
         private void quitButton_MouseDown(object sender, MouseEventArgs e)
         {
             quitButton.Image = Properties.Resources.quit_button_off;
+        }
+
+        private void StartForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }

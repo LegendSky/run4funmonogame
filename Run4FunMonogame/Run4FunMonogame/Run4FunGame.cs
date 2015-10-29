@@ -54,7 +54,8 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, oneAndAHalfSecondTimer = 0, twentySecondTimer = 0, tenthSecondTimer = 0;
+        private int oneSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
+        private int tileGenerationFrequency = 1500; // Lower is harder.
 
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
@@ -63,7 +64,9 @@ namespace Run4Fun
         private Color colorText = Color.Black;
         private Color colorTextNumber = Color.Black;
         private Color colorTile = Color.Gray;
-        private Color colorPlayer = Color.Black;
+        private Color colorPlayer = Color.Red;
+
+        private bool gamePaused = false;
 
         public Run4FunGame()
         {
@@ -132,6 +135,11 @@ namespace Run4Fun
             // Handles key/button presses.
             handleKeys();
 
+            if (gamePaused)
+            {
+                return;
+            }
+
             // Reads incoming messages and does the appropiate action. 
             readEV3MessageAndDoStuff();
 
@@ -176,12 +184,21 @@ namespace Run4Fun
                 }
             }
 
-            // Every 1.5 seconds.
-            oneAndAHalfSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (oneAndAHalfSecondTimer >= 1500)
+            // Starts at every 1.5 seconds.
+            tileGenerationTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (tileGenerationTimer >= tileGenerationFrequency)
             {
-                oneAndAHalfSecondTimer = 0;
+                tileGenerationTimer = 0;
                 addAndRemoveTiles();
+            }
+
+            // Frequency increaser
+            frequencyTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (frequencyTimer >= 30000)
+            {
+                frequencyTimer = 0;
+                if (tileGenerationFrequency > 500)
+                    tileGenerationFrequency -= 100; // lower is harder
             }
 
             // Every 20 seconds.
@@ -306,6 +323,11 @@ namespace Run4Fun
             prevGamePadState = gamePadState;
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
+            if (escOrPOrBackOrStartPressed())
+                gamePaused = !gamePaused;
+            if (gamePaused)
+                return;
+
             if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1)
                 moveLeft();
             else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5)
@@ -318,10 +340,17 @@ namespace Run4Fun
                     boostEnabled = true;
             }
 
-            // Exit button.
-            else if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyState.IsKeyDown(Keys.Escape))
-                Exit();
         }
+
+        /*private void pause()
+        {
+            gamePaused = true;
+        }
+
+        private void resume()
+        {
+            gamePaused = false;
+        }*/
 
         private void moveLeftPc()
         {
@@ -345,7 +374,11 @@ namespace Run4Fun
             for (int i = 0; i < tiles.Count; i++)
             {
                 if (playerAndTileCollide(player, tiles[i]))
+                {
+                    var hiscoresForm = new HiscoresForm(score);
+                    hiscoresForm.ShowDialog();
                     Exit();
+                }
             }
         }
 
@@ -387,6 +420,14 @@ namespace Run4Fun
         {
             return ((gamePadState.Buttons.A == ButtonState.Pressed && prevGamePadState.Buttons.A != ButtonState.Pressed)
                 || (keyState.IsKeyDown(Keys.Space) && prevKeyState.IsKeyUp(Keys.Space)));
+        }
+
+        private bool escOrPOrBackOrStartPressed()
+        {
+            return ((gamePadState.Buttons.Start == ButtonState.Pressed && prevGamePadState.Buttons.Start != ButtonState.Pressed)
+                || (gamePadState.Buttons.Back == ButtonState.Pressed && prevGamePadState.Buttons.Back != ButtonState.Pressed)
+                || (keyState.IsKeyDown(Keys.Escape) && prevKeyState.IsKeyUp(Keys.Escape))
+                || (keyState.IsKeyDown(Keys.P) && prevKeyState.IsKeyUp(Keys.P)));
         }
 
         private enum tilePlayer
@@ -537,7 +578,7 @@ namespace Run4Fun
 
             // Draw background
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
-            
+
             spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), colorText);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), colorTextNumber);
 
@@ -561,9 +602,18 @@ namespace Run4Fun
                     spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
             }
 
+            if (gamePaused)
+                spriteBatch.DrawString(bigfont, "GAME PAUSED", new Vector2(700, 400), Color.Red);
+
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        protected override void OnExiting(Object sender, EventArgs args)
+        {
+            base.OnExiting(sender, args);
+            new StartForm().ShowDialog();
         }
     }
 }

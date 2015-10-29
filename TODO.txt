@@ -3,3 +3,8 @@
 - design: layout/colors
 - Make levels?
 - music
+
+- restart button in hiscores
+- go back to menu
+- make tiles spawn frequency increase slowly
+

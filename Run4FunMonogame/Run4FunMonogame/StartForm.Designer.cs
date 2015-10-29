@@ -89,6 +89,7 @@
             this.Controls.Add(this.hiscoresButton);
             this.Name = "StartForm";
             this.Text = "Run4Fun";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.StartForm_FormClosed);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.StartForm_Paint);
             this.ResumeLayout(false);
 
