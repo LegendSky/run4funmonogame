@@ -29,11 +29,6 @@
         private void InitializeComponent()
         {
             this.hiscoresListBox = new System.Windows.Forms.ListBox();
-            this.tbUsername = new System.Windows.Forms.TextBox();
-            this.lbUsername = new System.Windows.Forms.Label();
-            this.btnConfirm = new System.Windows.Forms.Button();
-            this.lbScore = new System.Windows.Forms.Label();
-            this.tbScore = new System.Windows.Forms.TextBox();
             this.btnClear = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -48,55 +43,14 @@
             this.hiscoresListBox.Size = new System.Drawing.Size(932, 754);
             this.hiscoresListBox.TabIndex = 4;
             // 
-            // tbUsername
-            // 
-            this.tbUsername.Location = new System.Drawing.Point(235, 112);
-            this.tbUsername.Name = "tbUsername";
-            this.tbUsername.Size = new System.Drawing.Size(100, 20);
-            this.tbUsername.TabIndex = 5;
-            // 
-            // lbUsername
-            // 
-            this.lbUsername.AutoSize = true;
-            this.lbUsername.Location = new System.Drawing.Point(162, 115);
-            this.lbUsername.Name = "lbUsername";
-            this.lbUsername.Size = new System.Drawing.Size(58, 13);
-            this.lbUsername.TabIndex = 6;
-            this.lbUsername.Text = "Username:";
-            // 
-            // btnConfirm
-            // 
-            this.btnConfirm.Location = new System.Drawing.Point(367, 110);
-            this.btnConfirm.Name = "btnConfirm";
-            this.btnConfirm.Size = new System.Drawing.Size(75, 23);
-            this.btnConfirm.TabIndex = 7;
-            this.btnConfirm.Text = "Confirm";
-            this.btnConfirm.UseVisualStyleBackColor = true;
-            this.btnConfirm.Click += new System.EventHandler(this.btnConfirm_Click);
-            // 
-            // lbScore
-            // 
-            this.lbScore.AutoSize = true;
-            this.lbScore.Location = new System.Drawing.Point(162, 147);
-            this.lbScore.Name = "lbScore";
-            this.lbScore.Size = new System.Drawing.Size(38, 13);
-            this.lbScore.TabIndex = 9;
-            this.lbScore.Text = "Score:";
-            // 
-            // tbScore
-            // 
-            this.tbScore.Location = new System.Drawing.Point(235, 144);
-            this.tbScore.Name = "tbScore";
-            this.tbScore.Size = new System.Drawing.Size(100, 20);
-            this.tbScore.TabIndex = 8;
-            // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(60, 413);
+            this.btnClear.ForeColor = System.Drawing.Color.Red;
+            this.btnClear.Location = new System.Drawing.Point(1706, 790);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(149, 64);
             this.btnClear.TabIndex = 10;
-            this.btnClear.Text = "Clear";
+            this.btnClear.Text = "Clear hiscores";
             this.btnClear.UseVisualStyleBackColor = true;
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
@@ -107,27 +61,16 @@
             this.BackgroundImage = global::Run4Fun.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.Controls.Add(this.btnClear);
-            this.Controls.Add(this.lbScore);
-            this.Controls.Add(this.tbScore);
-            this.Controls.Add(this.btnConfirm);
-            this.Controls.Add(this.lbUsername);
-            this.Controls.Add(this.tbUsername);
             this.Controls.Add(this.hiscoresListBox);
             this.Name = "HiscoresForm";
             this.Text = "Run4Fun Hiscores";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.HiscoresForm_FormClosed);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
         private System.Windows.Forms.ListBox hiscoresListBox;
-        private System.Windows.Forms.TextBox tbUsername;
-        private System.Windows.Forms.Label lbUsername;
-        private System.Windows.Forms.Button btnConfirm;
-        private System.Windows.Forms.Label lbScore;
-        private System.Windows.Forms.TextBox tbScore;
         private System.Windows.Forms.Button btnClear;
     }
 }

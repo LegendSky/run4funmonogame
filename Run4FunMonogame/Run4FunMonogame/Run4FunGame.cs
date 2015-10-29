@@ -375,8 +375,7 @@ namespace Run4Fun
             {
                 if (playerAndTileCollide(player, tiles[i]))
                 {
-                    var hiscoresForm = new HiscoresForm(score);
-                    hiscoresForm.ShowDialog();
+                    new UsernameForm(score).ShowDialog();
                     Exit();
                 }
             }

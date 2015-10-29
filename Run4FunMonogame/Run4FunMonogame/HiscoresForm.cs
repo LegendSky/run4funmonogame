@@ -23,15 +23,9 @@ namespace Run4Fun
             convertTxtToList();
         }
 
-        public HiscoresForm(int score) : this()
+        public HiscoresForm(string username, int score) : this()
         {
-            writeNewHiscoreToTxt(tbUsername.Text, Convert.ToInt32(tbScore.Text));
-            convertTxtToList();
-        }
-
-        private void btnConfirm_Click(object sender, EventArgs e)
-        {
-            writeNewHiscoreToTxt(tbUsername.Text, Convert.ToInt32(tbScore.Text));
+            writeNewHiscoreToTxt(username, score);
             convertTxtToList();
         }
 
@@ -51,7 +45,7 @@ namespace Run4Fun
         private void convertTxtToList()
         {
             StreamReader sr = new StreamReader(fileName);
-        
+
             hiscores.Clear();
 
             while (sr.Peek() >= 0)
@@ -64,7 +58,7 @@ namespace Run4Fun
 
             hiscoresListBox.Items.Clear();
 
-            for(int i = 0; i < hiscores.Count; i++)
+            for (int i = 0; i < hiscores.Count; i++)
             {
                 string[] array = hiscores[i].Split(' ');
                 hiscoresListBox.Items.Add(i + 1 + ". " + array[0].PadRight(15) + array[1]);
@@ -78,7 +72,7 @@ namespace Run4Fun
             List<string> sortedList = new List<string>();
 
             while (hiscores.Count > 0)
-            {     
+            {
                 sortedList.Add(findMaxValueInList(hiscores));
                 hiscores.Remove(findMaxValueInList(hiscores));
             }

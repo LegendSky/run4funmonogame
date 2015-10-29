@@ -101,6 +101,12 @@
     <Compile Include="StartForm.Designer.cs">
       <DependentUpon>StartForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UsernameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UsernameForm.Designer.cs">
+      <DependentUpon>UsernameForm.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EV3MessengerLib">
@@ -147,6 +153,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="StartForm.resx">
       <DependentUpon>StartForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UsernameForm.resx">
+      <DependentUpon>UsernameForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
