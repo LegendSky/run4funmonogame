@@ -27,11 +27,6 @@ namespace Run4Fun
 
         private int tileSpeed = 8;
 
-        private const string EV3_SERIAL_PORT = "COM6";
-
-        private const int playerWidth = 100, playerHeight = 100;
-        private const int TILE_WIDTH = 230, TILE_HEIGHT = 500, WINDOW_WIDTH = 1920, WINDOW_HEIGHT = 1080;
-
         // The current tile the player is on.
         private int currentTile;
 
@@ -45,7 +40,6 @@ namespace Run4Fun
 
         private Random random = new Random();
 
-        private const bool collisionEnabled = false;
         private bool hyperMode = false; // hypermode, double score.
 
         private bool boostEnabled = false; // boost/dash.
@@ -57,14 +51,8 @@ namespace Run4Fun
         private int oneSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
         private int tileGenerationFrequency = 2500; // Lower is harder.
 
-        private int playerSpeed;
-        private int playerSpeedAcceleration = 10; // 10 or 23
+        private int playerSpeed = 0;
         private int newPositionX;
-
-        private Color colorText = Color.Gold;
-        private Color colorTextNumber = Color.Gold;
-        private Color colorTile = Color.Black;
-        private Color colorPlayer = Color.Red;
 
         private bool gamePaused = false;
 
@@ -108,7 +96,7 @@ namespace Run4Fun
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             backgroundImage = Content.Load<Texture2D>("background");
-            player = new Player(Content.Load<Texture2D>("player"), new Vector2((WINDOW_WIDTH / 2) - (playerWidth / 2), WINDOW_HEIGHT - 200));
+            player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
 
             smallfont = Content.Load<SpriteFont>("smallfont");
             font = Content.Load<SpriteFont>("font");
@@ -333,21 +321,21 @@ namespace Run4Fun
 
         private void moveLeftPc()
         {
-            newPositionX = (int)player.position.X - TILE_WIDTH;
-            playerSpeed -= playerSpeedAcceleration;
+            newPositionX = (int)player.position.X - GameConstants.TILE_WIDTH;
+            playerSpeed -= GameConstants.playerSpeedAcceleration;
             currentTile--;
         }
 
         private void moveRightPc()
         {
-            newPositionX = (int)player.position.X + TILE_WIDTH;
-            playerSpeed += playerSpeedAcceleration;
+            newPositionX = (int)player.position.X + GameConstants.TILE_WIDTH;
+            playerSpeed += GameConstants.playerSpeedAcceleration;
             currentTile++;
         }
 
         private void checkForCollision()
         {
-            if (!collisionEnabled || boostEnabled)
+            if (!GameConstants.collisionEnabled || boostEnabled)
                 return;
 
             for (int i = 0; i < tiles.Count; i++)
@@ -513,31 +501,31 @@ namespace Run4Fun
         private Vector2 generateTilePosition()
         {
             int randomNumber = random.Next(5);
-            int middleTileX = (WINDOW_WIDTH / 2) - (TILE_WIDTH / 2);
+            int middleTileX = (GameConstants.WINDOW_WIDTH / 2) - (GameConstants.TILE_WIDTH / 2);
             int x;
             int y;
             switch (randomNumber)
             {
                 case 0:
-                    x = middleTileX - (2 * TILE_WIDTH);
+                    x = middleTileX - (2 * GameConstants.TILE_WIDTH);
                     break;
                 case 1:
-                    x = middleTileX - TILE_WIDTH;
+                    x = middleTileX - GameConstants.TILE_WIDTH;
                     break;
                 case 2:
                     x = middleTileX;
                     break;
                 case 3:
-                    x = middleTileX + TILE_WIDTH;
+                    x = middleTileX + GameConstants.TILE_WIDTH;
                     break;
                 case 4:
-                    x = middleTileX + (2 * TILE_WIDTH);
+                    x = middleTileX + (2 * GameConstants.TILE_WIDTH);
                     break;
                 default:
                     x = 0;
                     break;
             }
-            y = -random.Next(TILE_HEIGHT, WINDOW_HEIGHT);
+            y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
             //Console.WriteLine("x: " + x + " y: " + y);
 
             return new Vector2(x, y);
@@ -557,20 +545,20 @@ namespace Run4Fun
             // Draw background
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
 
-            spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), colorText);
-            spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), colorTextNumber);
+            spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.colorText);
+            spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.colorTextNumber);
 
-            spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), colorText);
-            spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), colorTextNumber);
+            spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.colorText);
+            spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
 
-            spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), colorText);
-            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), colorTextNumber);
+            spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), GameConstants.colorText);
+            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
 
-            spriteBatch.Draw(player.image, player.position, colorPlayer);
+            spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
 
             // Draw tiles.
             foreach (Tile tile in tiles)
-                spriteBatch.Draw(tile.image, tile.position, colorTile);
+                spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
 
             if (colorEventEnabled)
             {
