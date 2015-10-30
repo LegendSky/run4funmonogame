@@ -79,7 +79,7 @@ namespace Run4Fun
         // Start of quit button methods.
         private void quitButton_Click(object sender, EventArgs e)
         {
-            Environment.Exit(0);
+            disconnectEV3AndClose();
         }
 
         private void quitButton_MouseEnter(object sender, EventArgs e)
@@ -99,6 +99,12 @@ namespace Run4Fun
 
         private void StartForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            disconnectEV3AndClose();
+        }
+
+        private void disconnectEV3AndClose()
+        {
+            ev3Messenger.Disconnect();
             Environment.Exit(0);
         }
     }
