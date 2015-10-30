@@ -55,7 +55,7 @@ namespace Run4Fun
         private int colorBoostCountDown = 5;
 
         private int oneSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
-        private int tileGenerationFrequency = 2000; // Lower is harder.
+        private int tileGenerationFrequency = 2500; // Lower is harder.
 
         private int playerSpeed;
         private int playerSpeedAcceleration = 10; // 10 or 23
