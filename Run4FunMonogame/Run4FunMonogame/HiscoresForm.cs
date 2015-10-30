@@ -105,6 +105,11 @@ namespace Run4Fun
 
         private void HiscoresForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            backToStartForm();
+        }
+
+        private void backToStartForm()
+        {
             Hide();
             new StartForm().ShowDialog();
             Close();
@@ -114,6 +119,11 @@ namespace Run4Fun
         {
             clearTxtFile();
             convertTxtToList();
+        }
+
+        private void btnBackStart_Click(object sender, EventArgs e)
+        {
+            backToStartForm();
         }
     }
 }

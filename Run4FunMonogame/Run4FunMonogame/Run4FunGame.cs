@@ -61,9 +61,9 @@ namespace Run4Fun
         private int playerSpeedAcceleration = 10; // 10 or 23
         private int newPositionX;
 
-        private Color colorText = Color.Black;
-        private Color colorTextNumber = Color.Black;
-        private Color colorTile = Color.Gray;
+        private Color colorText = Color.Gold;
+        private Color colorTextNumber = Color.Gold;
+        private Color colorTile = Color.Black;
         private Color colorPlayer = Color.Red;
 
         private bool gamePaused = false;
@@ -307,7 +307,23 @@ namespace Run4Fun
 
         private void addAndRemoveTiles()
         {
-            tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+            int randomNum = random.Next(1, 4);
+            int repeat = 1;
+            switch (randomNum)
+            {
+                case 1:
+                    repeat = 1;
+                    break;
+                case 2:
+                    repeat = 2;
+                    break;
+                case 3:
+                    repeat = 3;
+                    break;
+            }
+            for (int i = 0; i < repeat; i++)
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+
             for (int i = 0; i < tiles.Count; i++)
             {
                 if (tiles[i].position.Y > 1080)
@@ -376,7 +392,8 @@ namespace Run4Fun
                 if (playerAndTileCollide(player, tiles[i]))
                 {
                     new UsernameForm(score).ShowDialog();
-                    Exit();
+                    System.Environment.Exit(0);
+                    //Exit();
                 }
             }
         }
