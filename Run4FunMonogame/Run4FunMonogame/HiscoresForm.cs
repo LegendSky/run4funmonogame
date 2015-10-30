@@ -7,7 +7,7 @@ namespace Run4Fun
 {
     public partial class HiscoresForm : Form
     {
-        private List<string> hiscores = new List<string>(10);
+        private List<string> hiscores = new List<string>();
         private const string fileName = "hiscores.txt";
 
         public HiscoresForm()
