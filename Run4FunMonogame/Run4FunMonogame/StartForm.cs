@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EV3MessengerLib;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,9 +12,18 @@ namespace Run4Fun
 {
     public partial class StartForm : Form
     {
+        private EV3Messenger ev3Messenger;
+        private const string EV3_SERIAL_PORT = "COM6";
+
         public StartForm()
         {
             InitializeComponent();
+
+            // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
+            ev3Messenger = new EV3Messenger();
+
+            // EV3: Connect to the EV3 serial port over Bluetooth.
+            ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         private void StartForm_Paint(object sender, PaintEventArgs e)
@@ -25,7 +35,7 @@ namespace Run4Fun
         private void runButton_Click(object sender, EventArgs e)
         {
             Hide();
-            new Run4FunGame().Run();
+            new Run4FunGame(ev3Messenger).Run();
             Close();
         }
         private void runButton_MouseEnter(object sender, EventArgs e)

@@ -68,7 +68,7 @@ namespace Run4Fun
 
         private bool gamePaused = false;
 
-        public Run4FunGame()
+        public Run4FunGame(EV3Messenger ev3Messenger)
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1920;
@@ -76,11 +76,13 @@ namespace Run4Fun
             Window.AllowUserResizing = true;
             Content.RootDirectory = "Content";
 
+            this.ev3Messenger = ev3Messenger;
+
             // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
-            ev3Messenger = new EV3Messenger();
+            //ev3Messenger = new EV3Messenger();
 
             // EV3: Connect to the EV3 serial port over Bluetooth.
-            ev3Messenger.Connect(EV3_SERIAL_PORT);
+            //ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         /// <summary>
