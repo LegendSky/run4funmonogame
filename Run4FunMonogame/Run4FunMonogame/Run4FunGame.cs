@@ -40,12 +40,12 @@ namespace Run4Fun
         private Player player;
         private List<Tile> tiles = new List<Tile>();
 
-        // EV3: The EV3Messenger is used to communicate with the Lego EV3
-        private EV3Messenger ev3Messenger;
+        // EV3: The Program.ev3Messenger is used to communicate with the Lego EV3
+        //private Program.ev3Messenger Program.ev3Messenger;
 
         private Random random = new Random();
 
-        private const bool collisionEnabled = true;
+        private const bool collisionEnabled = false;
         private bool hyperMode = false; // hypermode, double score.
 
         private bool boostEnabled = false; // boost/dash.
@@ -68,7 +68,7 @@ namespace Run4Fun
 
         private bool gamePaused = false;
 
-        public Run4FunGame(EV3Messenger ev3Messenger)
+        public Run4FunGame()
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1920;
@@ -76,13 +76,13 @@ namespace Run4Fun
             Window.AllowUserResizing = true;
             Content.RootDirectory = "Content";
 
-            this.ev3Messenger = ev3Messenger;
+            //this.Program.ev3Messenger = Program.ev3Messenger;
 
-            // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
-            //ev3Messenger = new EV3Messenger();
+            // EV3: Create an Program.ev3Messenger object which you can use to talk to the EV3.
+            //Program.ev3Messenger = new Program.ev3Messenger();
 
             // EV3: Connect to the EV3 serial port over Bluetooth.
-            //ev3Messenger.Connect(EV3_SERIAL_PORT);
+            //Program.ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Run4Fun
         /// </summary>
         protected override void Initialize()
         {
-            currentTile = (int)tilePlayer.TILE_3;
+            currentTile = (int)tilePlayer.TILE_3_GREEN;
 
             base.Initialize();
         }
@@ -123,8 +123,8 @@ namespace Run4Fun
         protected override void UnloadContent()
         {
             // EV3 Disconnect
-            if (ev3Messenger.IsConnected)
-                ev3Messenger.Disconnect();
+            if (Program.ev3Messenger.IsConnected)
+                Program.ev3Messenger.Disconnect();
         }
 
         /// <summary>
@@ -154,9 +154,11 @@ namespace Run4Fun
             // Increase score.
             increaseScore();
 
-            // Check for color event
-            if (!ev3Messenger.IsConnected && colorEventEnabled)
-                checkColorLane();
+            // Check if current tile is 
+            if (!Program.ev3Messenger.IsConnected && colorEventEnabled && currentTileIsBoostColor())
+            {
+                addBoostAndScoreAndReset();
+            }
 
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -233,19 +235,17 @@ namespace Run4Fun
             colorForBoost = 0;
         }
 
-        private void checkColorLane()
+        private bool currentTileIsBoostColor()
         {
-            if (colorForBoost == currentTile)
-                addBoostAndScoreAndReset();
+            return colorForBoost == currentTile;
         }
 
         private void colorBoostEvent()
         {
-            Random random = new Random();
             colorForBoost = random.Next(1, 6);
 
             // Boost shouldn't be on player's position.
-            while (colorForBoost == player.position.X)
+            while (currentTileIsBoostColor())
                 colorForBoost = random.Next(1, 6);
 
             colorEventEnabled = true;
@@ -253,9 +253,9 @@ namespace Run4Fun
 
         private void readEV3MessageAndDoStuff()
         {
-            if (ev3Messenger.IsConnected)
+            if (Program.ev3Messenger.IsConnected)
             {
-                EV3Message message = ev3Messenger.ReadMessage();
+                EV3Message message = Program.ev3Messenger.ReadMessage();
                 if (message != null && message.MailboxTitle == "Command")
                 {
                     if (message.ValueAsText == "Left")
@@ -267,35 +267,6 @@ namespace Run4Fun
                 {
                     if (colorEventEnabled && colorForBoost == message.ValueAsNumber) //TODO: make it give points only once!
                         addBoostAndScoreAndReset();
-                    /*
-                    switch ((int)message.ValueAsNumber)
-                    {
-                        case 1:
-                            if (colorForBoost == 1)
-                                boostEnabled = true;
-                            Console.WriteLine("color 1: black");
-                            break;
-                        case 2:
-                            if (colorForBoost == 1)
-                                boostEnabled = true;
-                            Console.WriteLine("color 2: blue");
-                            break;
-                        case 3:
-                            if (colorForBoost == 1)
-                                boostEnabled = true;
-                            Console.WriteLine("color 3: green");
-                            break;
-                        case 4:
-                            if (colorForBoost == 1)
-                                boostEnabled = true;
-                            Console.WriteLine("color 4: yellow");
-                            break;
-                        case 5:
-                            if (colorForBoost == 1)
-                                boostEnabled = true;
-                            Console.WriteLine("color 5: red");
-                            break;
-                    }*/
                 }
             }
         }
@@ -346,9 +317,9 @@ namespace Run4Fun
             if (gamePaused)
                 return;
 
-            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1)
+            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1_BLACK)
                 moveLeft();
-            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5)
+            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5_RED)
                 moveRight();
             else if (aOrSpacePressed())
             {
@@ -397,16 +368,16 @@ namespace Run4Fun
 
         private void moveLeft()
         {
-            if (ev3Messenger.IsConnected)
-                ev3Messenger.SendMessage("Move", "Left");
+            if (Program.ev3Messenger.IsConnected)
+                Program.ev3Messenger.SendMessage("Move", "Left");
             else
                 moveLeftPc();
         }
 
         private void moveRight()
         {
-            if (ev3Messenger.IsConnected)
-                ev3Messenger.SendMessage("Move", "Right");
+            if (Program.ev3Messenger.IsConnected)
+                Program.ev3Messenger.SendMessage("Move", "Right");
             else
                 moveRightPc();
         }
@@ -439,11 +410,11 @@ namespace Run4Fun
 
         private enum tilePlayer
         {
-            TILE_1 = 1, // Black
-            TILE_2 = 2, // Blue
-            TILE_3 = 3, // Green
-            TILE_4 = 4, // Yellow
-            TILE_5 = 5 // Red
+            TILE_1_BLACK = 1, // Black
+            TILE_2_BLUE = 2, // Blue
+            TILE_3_GREEN = 3, // Green
+            TILE_4_YELLOW = 4, // Yellow
+            TILE_5_RED = 5 // Red
         }
 
         private bool playerAndTileCollide(Player player, Tile tile)
@@ -489,7 +460,7 @@ namespace Run4Fun
         private string convertColorNumberToString(int colorNumber)
         {
             string color = "-";
-            if (ev3Messenger.IsConnected)
+            if (Program.ev3Messenger.IsConnected)
             {
                 switch (colorNumber)
                 {
@@ -603,7 +574,7 @@ namespace Run4Fun
 
             if (colorEventEnabled)
             {
-                if (ev3Messenger.IsConnected)
+                if (Program.ev3Messenger.IsConnected)
                     spriteBatch.DrawString(bigfont, "BOOST ON " + convertColorNumberToString(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
                 else
                     spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
