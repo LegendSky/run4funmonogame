@@ -25,6 +25,9 @@ namespace Run4Fun
         private GamePadState prevGamePadState, gamePadState;
         private Texture2D backgroundImage;
 
+        private Rectangle boostRectangle;
+        private Texture2D boostTexture;
+
         private int tileSpeed = 8;
 
         // The current tile the player is on.
@@ -40,10 +43,8 @@ namespace Run4Fun
 
         private Random random = new Random();
 
-        private bool hyperMode = false; // hypermode, double score.
-
         private bool boostEnabled = false; // boost/dash.
-        private int boostAmount = 10;
+        private int boostAmount = 100;
         private int colorForBoost;
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
@@ -97,6 +98,7 @@ namespace Run4Fun
 
             backgroundImage = Content.Load<Texture2D>("background");
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
+            boostTexture = Content.Load<Texture2D>("boost");
 
             smallfont = Content.Load<SpriteFont>("smallfont");
             font = Content.Load<SpriteFont>("font");
@@ -147,6 +149,8 @@ namespace Run4Fun
             {
                 addBoostAndScoreAndReset();
             }
+
+            boostRectangle = new Rectangle(10, 550, boostAmount, 50);
 
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -545,6 +549,8 @@ namespace Run4Fun
             // Draw background
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
 
+            spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
+
             spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.colorText);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.colorTextNumber);
 
@@ -554,11 +560,11 @@ namespace Run4Fun
             spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), GameConstants.colorText);
             spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
 
-            spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
-
             // Draw tiles.
             foreach (Tile tile in tiles)
                 spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
+
+            spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
 
             if (colorEventEnabled)
             {
