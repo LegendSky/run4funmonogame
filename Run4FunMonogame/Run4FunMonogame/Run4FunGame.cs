@@ -87,10 +87,12 @@ namespace Run4Fun
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load images.
             backgroundImage = Content.Load<Texture2D>("background");
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
             boostTexture = Content.Load<Texture2D>("boost");
 
+            // Load fonts.
             smallfont = Content.Load<SpriteFont>("smallfont");
             font = Content.Load<SpriteFont>("font");
             bigfont = Content.Load<SpriteFont>("bigfont");
@@ -177,6 +179,7 @@ namespace Run4Fun
                 }
             }
 
+            // Spawn and remove tiles.
             tileGenerationTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (tileGenerationTimer >= tileGenerationFrequency)
             {
@@ -184,7 +187,7 @@ namespace Run4Fun
                 spawnAndRemoveTiles();
             }
 
-            // Frequency increaser
+            // Increase tile spawn frequency.
             frequencyTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (frequencyTimer >= 30000)
             {
