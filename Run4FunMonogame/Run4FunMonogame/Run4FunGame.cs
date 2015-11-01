@@ -72,7 +72,7 @@ namespace Run4Fun
         protected override void Initialize()
         {
             currentTile = (int)tilePlayer.TILE_3_GREEN;
-
+            updateBoostBar();
             base.Initialize();
         }
 
@@ -116,13 +116,14 @@ namespace Run4Fun
             // Handles key/button presses.
             handleKeys();
 
+            // Stop updating the game if paused.
             if (gamePaused)
             {
                 return;
             }
 
             // Reads incoming messages and does the appropiate action. 
-            readEV3MessageAndDoStuff();
+            readEV3MessageAndDoAction();
 
             // Check for collision.
             checkForCollision();
@@ -139,8 +140,6 @@ namespace Run4Fun
                 addBoostAndScoreAndReset();
             }
 
-            boostRectangle = new Rectangle(10, 520, boostAmount * 3, 50);
-
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (boostEnabled)
@@ -154,6 +153,7 @@ namespace Run4Fun
                 {
                     tenthSecondTimer = 0;
                     boostAmount--;
+                    updateBoostBar();
                 }
             }
 
@@ -175,12 +175,11 @@ namespace Run4Fun
                 }
             }
 
-            // Starts at every 1.5 seconds.
             tileGenerationTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (tileGenerationTimer >= tileGenerationFrequency)
             {
                 tileGenerationTimer = 0;
-                addAndRemoveTiles();
+                spawnAndRemoveTiles();
             }
 
             // Frequency increaser
@@ -211,6 +210,11 @@ namespace Run4Fun
             player.position.X += playerSpeed;
 
             base.Update(gameTime);
+        }
+
+        private void updateBoostBar()
+        {
+            boostRectangle = new Rectangle(10, 520, boostAmount * 3, 50);
         }
 
         private void nextLevel()
@@ -244,7 +248,7 @@ namespace Run4Fun
             colorEventEnabled = true;
         }
 
-        private void readEV3MessageAndDoStuff()
+        private void readEV3MessageAndDoAction()
         {
             if (Program.ev3Messenger.IsConnected)
             {
@@ -252,9 +256,13 @@ namespace Run4Fun
                 if (message != null && message.MailboxTitle == "Command")
                 {
                     if (message.ValueAsText == "Left")
+                    {
                         moveLeftPc();
+                    }
                     else if (message.ValueAsText == "Right")
+                    {
                         moveRightPc();
+                    }
                 }
                 else if (message != null && message.MailboxTitle == "Color")
                 {
@@ -274,29 +282,26 @@ namespace Run4Fun
             }
             score += 5000;
             resetColorBoost();
+            updateBoostBar();
         }
 
-        private void addAndRemoveTiles()
+        private void spawnAndRemoveTiles()
         {
-            int randomNum = random.Next(1, 4);
-            int repeat = 1;
-            switch (randomNum)
-            {
-                case 1:
-                    repeat = 1;
-                    break;
-                case 2:
-                    repeat = 2;
-                    break;
-                case 3:
-                    repeat = 3;
-                    break;
-            }
+            int repeat = random.Next(1, 4);
+
+            // 1 to 3 tiles will spawn on random lanes.
             for (int i = 0; i < repeat; i++)
             {
                 tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
             }
 
+            // 50% chance to spawn tile on the player's lane.
+            if (random.Next(1, 3) == 1)
+            {
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePositionOnPlayer()));
+            }
+
+            // Remove out of vision tiles.
             for (int i = 0; i < tiles.Count; i++)
             {
                 if (tiles[i].position.Y > 1080)
@@ -326,10 +331,12 @@ namespace Run4Fun
             {
                 moveLeft();
             }
+
             else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5_RED)
             {
                 moveRight();
             }
+
             else if (aOrSpacePressed())
             {
                 if (boostEnabled)
@@ -531,6 +538,60 @@ namespace Run4Fun
             return color;
         }
 
+        private int getTileXCoord(int tile)
+        {
+            int middleTileX = (GameConstants.WINDOW_WIDTH / 2) - (GameConstants.TILE_WIDTH / 2);
+            int x;
+            switch (tile)
+            {
+                case 1:
+                    x = middleTileX - (2 * GameConstants.TILE_WIDTH);
+                    break;
+                case 2:
+                    x = middleTileX - (GameConstants.TILE_WIDTH);
+                    break;
+                case 3:
+                default:
+                    x = middleTileX;
+                    break;
+                case 4:
+                    x = middleTileX + (GameConstants.TILE_WIDTH);
+                    break;
+                case 5:
+                    x = middleTileX + (2 * GameConstants.TILE_WIDTH);
+                    break;
+            }
+            return x;
+        }
+
+        private Vector2 generateTilePositionOnPlayer()
+        {
+            int x;
+            int y;
+            switch (currentTile)
+            {
+                case 1:
+                    x = getTileXCoord(1);
+                    break;
+                case 2:
+                    x = getTileXCoord(2);
+                    break;
+                case 3:
+                default:
+                    x = getTileXCoord(3);
+                    break;
+                case 4:
+                    x = getTileXCoord(4);
+                    break;
+                case 5:
+                    x = getTileXCoord(5);
+                    break;
+            }
+            y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
+
+            return new Vector2(x, y);
+        }
+
         /// <summary>
         /// Generates random position for tiles.
         /// </summary>
@@ -538,28 +599,25 @@ namespace Run4Fun
         private Vector2 generateTilePosition()
         {
             int randomNumber = random.Next(5);
-            int middleTileX = (GameConstants.WINDOW_WIDTH / 2) - (GameConstants.TILE_WIDTH / 2);
             int x;
             int y;
             switch (randomNumber)
             {
                 case 0:
-                    x = middleTileX - (2 * GameConstants.TILE_WIDTH);
+                    x = getTileXCoord(1);
                     break;
                 case 1:
-                    x = middleTileX - GameConstants.TILE_WIDTH;
+                    x = getTileXCoord(2);
                     break;
                 case 2:
-                    x = middleTileX;
+                    x = getTileXCoord(3);
                     break;
                 case 3:
-                    x = middleTileX + GameConstants.TILE_WIDTH;
+                default:
+                    x = getTileXCoord(4);
                     break;
                 case 4:
-                    x = middleTileX + (2 * GameConstants.TILE_WIDTH);
-                    break;
-                default:
-                    x = 0;
+                    x = getTileXCoord(5);
                     break;
             }
             y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
@@ -596,7 +654,9 @@ namespace Run4Fun
 
             // Draw tiles.
             foreach (Tile tile in tiles)
+            {
                 spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
+            }
 
             spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
 
@@ -609,7 +669,9 @@ namespace Run4Fun
             }
 
             if (gamePaused)
+            {
                 spriteBatch.DrawString(bigfont, "GAME PAUSED", new Vector2(700, 400), Color.Red);
+            }
 
             spriteBatch.End();
 
