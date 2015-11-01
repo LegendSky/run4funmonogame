@@ -8,8 +8,6 @@ namespace Run4Fun.Sprites
 {
     class GameConstants
     {
-        public const string EV3_SERIAL_PORT = "COM26";
-
         public const int playerWidth = 100, 
             playerHeight = 100;
 
@@ -18,7 +16,7 @@ namespace Run4Fun.Sprites
             WINDOW_WIDTH = 1920, 
             WINDOW_HEIGHT = 1080;
 
-        public const bool collisionEnabled = false;
+        public const bool collisionEnabled = true;
         public const int playerSpeedAcceleration = 10; // 10 or 23
 
         public static readonly Color colorText = Color.Gold;
