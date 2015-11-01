@@ -44,7 +44,7 @@ namespace Run4Fun
         private Random random = new Random();
 
         private bool boostEnabled = false; // boost/dash.
-        private int boostAmount = 100;
+        private int boostAmount = 10;
         private int colorForBoost;
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
@@ -150,7 +150,7 @@ namespace Run4Fun
                 addBoostAndScoreAndReset();
             }
 
-            boostRectangle = new Rectangle(10, 550, boostAmount, 50);
+            boostRectangle = new Rectangle(10, 520, boostAmount * 3, 50);
 
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -265,7 +265,10 @@ namespace Run4Fun
 
         private void addBoostAndScoreAndReset()
         {
-            boostAmount += 20;
+            if (boostAmount <= 100)
+            {
+                boostAmount += 20;
+            }
             score += 5000;
             resetColorBoost();
         }
@@ -549,8 +552,6 @@ namespace Run4Fun
             // Draw background
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
 
-            spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
-
             spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.colorText);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.colorTextNumber);
 
@@ -559,6 +560,11 @@ namespace Run4Fun
 
             spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), GameConstants.colorText);
             spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
+            spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
+            if (boostAmount >= 100)
+            {
+                spriteBatch.DrawString(font, "MAX BOOST", new Vector2(10, 570), GameConstants.colorText);
+            }
 
             // Draw tiles.
             foreach (Tile tile in tiles)
