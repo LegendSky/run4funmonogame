@@ -41,14 +41,12 @@ namespace Run4Fun
         {
             StreamWriter sw = new StreamWriter(fileName, true);
             sw.WriteLine(name + " " + score);
-            //sw.WriteLine(name + " " + DateTime.Now.ToString("HH:mm:ss") + " " + score);
             sw.Close();
         }
 
         private void convertTxtToListAndPutInListBox()
         {
             StreamReader sr = new StreamReader(fileName);
-
             hiscores.Clear();
 
             while (sr.Peek() >= 0)
@@ -58,13 +56,11 @@ namespace Run4Fun
             }
 
             sortList();
-
             hiscoresListBox.Items.Clear();
 
             for (int i = 0; i < hiscores.Count; i++)
             {
                 string[] array = hiscores[i].Split(' ');
-                //hiscoresListBox.Items.Add(i + 1 + ". " + array[0].PadRight(15) + array[1].PadRight(15) + array[2]);
                 hiscoresListBox.Items.Add(i + 1 + ". " + array[0].PadRight(15) + array[1]);
             }
 
@@ -104,7 +100,6 @@ namespace Run4Fun
         private int getScoreFromHiscore(string hiscore)
         {
             string[] array = hiscore.Split(' ');
-            //return Convert.ToInt32(array[2]);
             return Convert.ToInt32(array[1]);
         }
 

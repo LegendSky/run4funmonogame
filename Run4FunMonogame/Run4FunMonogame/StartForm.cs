@@ -12,20 +12,9 @@ namespace Run4Fun
 {
     public partial class StartForm : Form
     {
-        //private EV3Messenger ev3Messenger;
-        //private const string EV3_SERIAL_PORT = "COM6";
-
         public StartForm()
         {
             InitializeComponent();
-
-            //this.ev3Messenger = ev3Messenger;
-
-            // EV3: Create an EV3Messenger object which you can use to talk to the EV3.
-            //ev3Messenger = new EV3Messenger();
-
-            // EV3: Connect to the EV3 serial port over Bluetooth.
-            //ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         private void StartForm_Paint(object sender, PaintEventArgs e)
@@ -53,7 +42,7 @@ namespace Run4Fun
         private void runButton_MouseDown(object sender, MouseEventArgs e)
         {
             // Button pressed.
-            runButton.Image = Properties.Resources.run_button_off;//TODO: replace with button press image?
+            runButton.Image = Properties.Resources.run_button_off;
         }
 
         // Start of hiscores button methods.
@@ -81,7 +70,7 @@ namespace Run4Fun
         // Start of quit button methods.
         private void quitButton_Click(object sender, EventArgs e)
         {
-            disconnectEV3AndClose();
+            closeApplication();
         }
 
         private void quitButton_MouseEnter(object sender, EventArgs e)
@@ -104,9 +93,8 @@ namespace Run4Fun
             Environment.Exit(0);
         }
 
-        private void disconnectEV3AndClose()
+        private void closeApplication()
         {
-            //ev3Messenger.Disconnect();
             Environment.Exit(0);
         }
     }
