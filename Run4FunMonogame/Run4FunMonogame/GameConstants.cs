@@ -8,7 +8,7 @@ namespace Run4Fun.Sprites
 {
     class GameConstants
     {
-        public const string EV3_SERIAL_PORT = "COM6";
+        public const string EV3_SERIAL_PORT = "COM26";
 
         public const int playerWidth = 100, 
             playerHeight = 100;

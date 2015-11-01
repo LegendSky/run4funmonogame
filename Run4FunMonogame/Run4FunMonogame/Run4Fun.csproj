@@ -78,7 +78,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Sprites\GameConstants.cs" />
+    <Compile Include="GameConstants.cs" />
     <Compile Include="HiscoresForm.cs">
       <SubType>Form</SubType>
     </Compile>
