@@ -38,12 +38,9 @@ namespace Run4Fun
         private Player player;
         private List<Tile> tiles = new List<Tile>();
 
-        // EV3: The Program.ev3Messenger is used to communicate with the Lego EV3
-        //private Program.ev3Messenger Program.ev3Messenger;
-
         private Random random = new Random();
 
-        private bool boostEnabled = false; // boost/dash.
+        private bool boostEnabled = false;
         private int boostAmount = 10;
         private int colorForBoost;
         private bool colorEventEnabled = false;
@@ -64,14 +61,6 @@ namespace Run4Fun
             graphics.PreferredBackBufferHeight = 1080;
             Window.AllowUserResizing = true;
             Content.RootDirectory = "Content";
-
-            //this.Program.ev3Messenger = Program.ev3Messenger;
-
-            // EV3: Create an Program.ev3Messenger object which you can use to talk to the EV3.
-            //Program.ev3Messenger = new Program.ev3Messenger();
-
-            // EV3: Connect to the EV3 serial port over Bluetooth.
-            //Program.ev3Messenger.Connect(EV3_SERIAL_PORT);
         }
 
         /// <summary>
@@ -157,7 +146,9 @@ namespace Run4Fun
             if (boostEnabled)
             {
                 if (boostAmount <= 0)
+                {
                     boostEnabled = false;
+                }
 
                 if (tenthSecondTimer >= 100)
                 {
@@ -174,9 +165,13 @@ namespace Run4Fun
                 if (colorEventEnabled)
                 {
                     if (colorBoostCountDown <= 0)
+                    {
                         resetColorBoost();
+                    }
                     else
+                    {
                         colorBoostCountDown--;
+                    }
                 }
             }
 
@@ -194,7 +189,9 @@ namespace Run4Fun
             {
                 frequencyTimer = 0;
                 if (tileGenerationFrequency > 1000)
+                {
                     tileGenerationFrequency -= 100; // lower is harder
+                }
             }
 
             // Every 20 seconds.
@@ -208,7 +205,9 @@ namespace Run4Fun
             }
 
             if (player.position.X == newPositionX)
+            {
                 playerSpeed = 0;
+            }
             player.position.X += playerSpeed;
 
             base.Update(gameTime);
@@ -238,7 +237,9 @@ namespace Run4Fun
 
             // Boost shouldn't be on player's position.
             while (currentTileIsBoostColor())
+            {
                 colorForBoost = random.Next(1, 6);
+            }
 
             colorEventEnabled = true;
         }
@@ -257,8 +258,10 @@ namespace Run4Fun
                 }
                 else if (message != null && message.MailboxTitle == "Color")
                 {
-                    if (colorEventEnabled && colorForBoost == message.ValueAsNumber) //TODO: make it give points only once!
+                    if (colorEventEnabled && colorForBoost == message.ValueAsNumber)
+                    {
                         addBoostAndScoreAndReset();
+                    }
                 }
             }
         }
@@ -290,7 +293,9 @@ namespace Run4Fun
                     break;
             }
             for (int i = 0; i < repeat; i++)
+            {
                 tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+            }
 
             for (int i = 0; i < tiles.Count; i++)
             {
@@ -308,20 +313,33 @@ namespace Run4Fun
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
             if (escOrPOrBackOrStartPressed())
+            {
                 gamePaused = !gamePaused;
+            }
+
             if (gamePaused)
+            {
                 return;
+            }
 
             if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1_BLACK)
+            {
                 moveLeft();
+            }
             else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5_RED)
+            {
                 moveRight();
+            }
             else if (aOrSpacePressed())
             {
                 if (boostEnabled)
+                {
                     boostEnabled = false;
+                }
                 else if (boostAmount > 0)
+                {
                     boostEnabled = true;
+                }
             }
 
         }
@@ -343,7 +361,9 @@ namespace Run4Fun
         private void checkForCollision()
         {
             if (!GameConstants.collisionEnabled || boostEnabled)
+            {
                 return;
+            }
 
             for (int i = 0; i < tiles.Count; i++)
             {
@@ -358,23 +378,33 @@ namespace Run4Fun
         private void descentTiles()
         {
             for (int i = 0; i < tiles.Count; i++)
+            {
                 tiles[i].position.Y += boostEnabled ? tileSpeed * 5 : tileSpeed;
+            }
         }
 
         private void moveLeft()
         {
             if (Program.ev3Messenger.IsConnected)
+            {
                 Program.ev3Messenger.SendMessage("Move", "Left");
+            }
             else
+            {
                 moveLeftPc();
+            }
         }
 
         private void moveRight()
         {
             if (Program.ev3Messenger.IsConnected)
+            {
                 Program.ev3Messenger.SendMessage("Move", "Right");
+            }
             else
+            {
                 moveRightPc();
+            }
         }
 
         private bool leftKeyOrTriggerPressed()
@@ -533,7 +563,6 @@ namespace Run4Fun
                     break;
             }
             y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
-            //Console.WriteLine("x: " + x + " y: " + y);
 
             return new Vector2(x, y);
         }
@@ -544,7 +573,6 @@ namespace Run4Fun
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
             GraphicsDevice.Clear(Color.White);
 
             spriteBatch.Begin();
