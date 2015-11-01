@@ -31,7 +31,7 @@ namespace Run4Fun
         private int tileSpeed = 8;
 
         // The current tile the player is on.
-        private int currentTile;
+        private int currentLane;
 
         private int score = 0;
         private int level = 1;
@@ -47,7 +47,9 @@ namespace Run4Fun
         private int colorBoostCountDown = 5;
 
         private int oneSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
-        private int tileGenerationFrequency = 2500; // Lower is harder.
+
+        // Milliseconds before spawning next wave.
+        private int tileGenerationFrequency = 2500;
 
         private int playerSpeed = 0;
         private int newPositionX;
@@ -71,7 +73,7 @@ namespace Run4Fun
         /// </summary>
         protected override void Initialize()
         {
-            currentTile = (int)tilePlayer.TILE_3_GREEN;
+            currentLane = (int)lanePlayer.LANE_3_GREEN;
             updateBoostBar();
             base.Initialize();
         }
@@ -135,9 +137,9 @@ namespace Run4Fun
             increaseScore();
 
             // Check if current tile is 
-            if (!Program.ev3Messenger.IsConnected && colorEventEnabled && currentTileIsBoostColor())
+            if (!Program.ev3Messenger.IsConnected && colorEventEnabled && currentLaneIsBoostColor())
             {
-                addBoostAndScoreAndReset();
+                addBoostAndScoreAndUpdate();
             }
 
             // Every tenth second.
@@ -166,7 +168,7 @@ namespace Run4Fun
                 {
                     if (colorBoostCountDown <= 0)
                     {
-                        resetColorBoost();
+                        resetColorEvent();
                     }
                     else
                     {
@@ -198,7 +200,7 @@ namespace Run4Fun
             if (twentySecondTimer >= 20000)
             {
                 twentySecondTimer = 0;
-                colorBoostEvent();
+                startColorBoostEvent();
 
                 nextLevel();
             }
@@ -212,35 +214,51 @@ namespace Run4Fun
             base.Update(gameTime);
         }
 
+        /// <summary>
+        /// Update the boost bar.
+        /// </summary>
         private void updateBoostBar()
         {
             boostRectangle = new Rectangle(10, 520, boostAmount * 3, 50);
         }
 
+        /// <summary>
+        /// Increase level and tilespeed.
+        /// </summary>
         private void nextLevel()
         {
             level++;
             tileSpeed++;
         }
 
-        private void resetColorBoost()
+        /// <summary>
+        /// Reset color event.
+        /// </summary>
+        private void resetColorEvent()
         {
             colorEventEnabled = false;
             colorBoostCountDown = 5;
             colorForBoost = 0;
         }
 
-        private bool currentTileIsBoostColor()
+        /// <summary>
+        /// Checkes whether the color is in the current lane.
+        /// </summary>
+        /// <returns></returns>
+        private bool currentLaneIsBoostColor()
         {
-            return colorForBoost == currentTile;
+            return colorForBoost == currentLane;
         }
 
-        private void colorBoostEvent()
+        /// <summary>
+        /// Start color boost event.
+        /// </summary>
+        private void startColorBoostEvent()
         {
             colorForBoost = random.Next(1, 6);
 
             // Boost shouldn't be on player's position.
-            while (currentTileIsBoostColor())
+            while (currentLaneIsBoostColor())
             {
                 colorForBoost = random.Next(1, 6);
             }
@@ -248,6 +266,9 @@ namespace Run4Fun
             colorEventEnabled = true;
         }
 
+        /// <summary>
+        /// Actions when EV3 messages are received.
+        /// </summary>
         private void readEV3MessageAndDoAction()
         {
             if (Program.ev3Messenger.IsConnected)
@@ -268,37 +289,43 @@ namespace Run4Fun
                 {
                     if (colorEventEnabled && colorForBoost == message.ValueAsNumber)
                     {
-                        addBoostAndScoreAndReset();
+                        addBoostAndScoreAndUpdate();
                     }
                 }
             }
         }
 
-        private void addBoostAndScoreAndReset()
+        /// <summary>
+        /// Increase boost and score amount, reset the color event and update boost bar.
+        /// </summary>
+        private void addBoostAndScoreAndUpdate()
         {
             if (boostAmount <= 100)
             {
                 boostAmount += 20;
             }
+
             score += 5000;
-            resetColorBoost();
+            resetColorEvent();
             updateBoostBar();
         }
 
+        /// <summary>
+        /// Spawn new tiles and remove tiles out of vision.
+        /// </summary>
         private void spawnAndRemoveTiles()
         {
-            int repeat = random.Next(1, 4);
-
             // 1 to 3 tiles will spawn on random lanes.
+            int repeat = random.Next(1, 4);
             for (int i = 0; i < repeat; i++)
             {
-                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition()));
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition(false)));
             }
 
             // 50% chance to spawn tile on the player's lane.
             if (random.Next(1, 3) == 1)
             {
-                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePositionOnPlayer()));
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition(true)));
             }
 
             // Remove out of vision tiles.
@@ -309,6 +336,9 @@ namespace Run4Fun
             }
         }
 
+        /// <summary>
+        /// Actions for key presses.
+        /// </summary>
         private void handleKeys()
         {
             prevKeyState = keyState;
@@ -317,7 +347,7 @@ namespace Run4Fun
             prevGamePadState = gamePadState;
             gamePadState = GamePad.GetState(PlayerIndex.One);
 
-            if (escOrPOrBackOrStartPressed())
+            if (pauseButtonPressed())
             {
                 gamePaused = !gamePaused;
             }
@@ -327,17 +357,31 @@ namespace Run4Fun
                 return;
             }
 
-            if (leftKeyOrTriggerPressed() && playerSpeed == 0 && currentTile > (int)tilePlayer.TILE_1_BLACK)
+            if (leftArrowOrTriggerPressed() && playerSpeed == 0 && currentLane > (int)lanePlayer.LANE_1_BLACK)
             {
-                moveLeft();
+                if (Program.ev3Messenger.IsConnected)
+                {
+                    moveLeftEV3();
+                }
+                else
+                {
+                    moveLeftPc();
+                }
             }
 
-            else if (rightKeyOrTriggerPressed() && playerSpeed == 0 && currentTile < (int)tilePlayer.TILE_5_RED)
+            else if (rightArrowOrTriggerPressed() && playerSpeed == 0 && currentLane < (int)lanePlayer.LANE_5_RED)
             {
-                moveRight();
+                if (Program.ev3Messenger.IsConnected)
+                {
+                    moveRightEV3();
+                }
+                else
+                {
+                    moveRightPc();
+                }
             }
 
-            else if (aOrSpacePressed())
+            else if (boostPressed())
             {
                 if (boostEnabled)
                 {
@@ -351,20 +395,29 @@ namespace Run4Fun
 
         }
 
+        /// <summary>
+        /// Move the player ingame left.
+        /// </summary>
         private void moveLeftPc()
         {
             newPositionX = (int)player.position.X - GameConstants.TILE_WIDTH;
             playerSpeed -= GameConstants.playerSpeedAcceleration;
-            currentTile--;
+            currentLane--;
         }
 
+        /// <summary>
+        /// Move the player ingame right.
+        /// </summary>
         private void moveRightPc()
         {
             newPositionX = (int)player.position.X + GameConstants.TILE_WIDTH;
             playerSpeed += GameConstants.playerSpeedAcceleration;
-            currentTile++;
+            currentLane++;
         }
 
+        /// <summary>
+        /// Check if the player rectangle touches any tile rectangles.
+        /// </summary>
         private void checkForCollision()
         {
             if (!GameConstants.collisionEnabled || boostEnabled)
@@ -382,6 +435,9 @@ namespace Run4Fun
             }
         }
 
+        /// <summary>
+        /// Descent all tiles, speed depends on tileSpeed.
+        /// </summary>
         private void descentTiles()
         {
             for (int i = 0; i < tiles.Count; i++)
@@ -390,49 +446,57 @@ namespace Run4Fun
             }
         }
 
-        private void moveLeft()
+        /// <summary>
+        /// Send message to EV3 with title "Move" and message "Left".
+        /// </summary>
+        private void moveLeftEV3()
         {
-            if (Program.ev3Messenger.IsConnected)
-            {
-                Program.ev3Messenger.SendMessage("Move", "Left");
-            }
-            else
-            {
-                moveLeftPc();
-            }
+            Program.ev3Messenger.SendMessage("Move", "Left");
         }
 
-        private void moveRight()
+        /// <summary>
+        /// Send message to EV3 with title "Move" and message "Right".
+        /// </summary>
+        private void moveRightEV3()
         {
-            if (Program.ev3Messenger.IsConnected)
-            {
-                Program.ev3Messenger.SendMessage("Move", "Right");
-            }
-            else
-            {
-                moveRightPc();
-            }
+            Program.ev3Messenger.SendMessage("Move", "Right");
         }
 
-        private bool leftKeyOrTriggerPressed()
+        /// <summary>
+        /// Checks whether left arrow(PC) or trigger(controller) is pressed.
+        /// </summary>
+        /// <returns></returns>
+        private bool leftArrowOrTriggerPressed()
         {
             return ((gamePadState.Triggers.Left >= 0.5 && prevGamePadState.Triggers.Left < 0.5)
                 || (keyState.IsKeyDown(Keys.Left) && prevKeyState.IsKeyUp(Keys.Left)));
         }
 
-        private bool rightKeyOrTriggerPressed()
+        /// <summary>
+        /// Checks whether right arrow(PC) or trigger(controller) is pressed.
+        /// </summary>
+        /// <returns></returns>
+        private bool rightArrowOrTriggerPressed()
         {
             return ((gamePadState.Triggers.Right >= 0.5 && prevGamePadState.Triggers.Right < 0.5)
                 || (keyState.IsKeyDown(Keys.Right) && prevKeyState.IsKeyUp(Keys.Right)));
         }
 
-        private bool aOrSpacePressed()
+        /// <summary>
+        /// Checks whether A or Space is pressed.
+        /// </summary>
+        /// <returns></returns>
+        private bool boostPressed()
         {
             return ((gamePadState.Buttons.A == ButtonState.Pressed && prevGamePadState.Buttons.A != ButtonState.Pressed)
                 || (keyState.IsKeyDown(Keys.Space) && prevKeyState.IsKeyUp(Keys.Space)));
         }
 
-        private bool escOrPOrBackOrStartPressed()
+        /// <summary>
+        /// Checks whether either Start, Back, Escape or P is pressed.
+        /// </summary>
+        /// <returns></returns>
+        private bool pauseButtonPressed()
         {
             return ((gamePadState.Buttons.Start == ButtonState.Pressed && prevGamePadState.Buttons.Start != ButtonState.Pressed)
                 || (gamePadState.Buttons.Back == ButtonState.Pressed && prevGamePadState.Buttons.Back != ButtonState.Pressed)
@@ -440,15 +504,24 @@ namespace Run4Fun
                 || (keyState.IsKeyDown(Keys.P) && prevKeyState.IsKeyUp(Keys.P)));
         }
 
-        private enum tilePlayer
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum lanePlayer
         {
-            TILE_1_BLACK = 1, // Black
-            TILE_2_BLUE = 2, // Blue
-            TILE_3_GREEN = 3, // Green
-            TILE_4_YELLOW = 4, // Yellow
-            TILE_5_RED = 5 // Red
+            LANE_1_BLACK = 1, // Black
+            LANE_2_BLUE = 2, // Blue
+            LANE_3_GREEN = 3, // Green
+            LANE_4_YELLOW = 4, // Yellow
+            LANE_5_RED = 5 // Red
         }
 
+        /// <summary>
+        /// Checks whether the rectangle of player touches the rectangle of any tile.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="tile"></param>
+        /// <returns></returns>
         private bool playerAndTileCollide(Player player, Tile tile)
         {
             Rectangle playerRect = new Rectangle((int)player.position.X, (int)player.position.Y, player.image.Width, player.image.Height);
@@ -457,11 +530,18 @@ namespace Run4Fun
             return playerRect.Intersects(tileRect);
         }
 
+        /// <summary>
+        /// Increase score.
+        /// </summary>
         private void increaseScore()
         {
             score++;
         }
 
+        /// <summary>
+        /// The color for boost event.
+        /// </summary>
+        /// <returns></returns>
         private Color colorEventColor()
         {
             Color color;
@@ -474,6 +554,7 @@ namespace Run4Fun
                     color = Color.Blue;
                     break;
                 case 3:
+                default:
                     color = Color.Green;
                     break;
                 case 4:
@@ -482,16 +563,18 @@ namespace Run4Fun
                 case 5:
                     color = Color.Red;
                     break;
-                default:
-                    color = Color.Black;
-                    break;
             }
             return color;
         }
 
-        private string convertColorNumberToString(int colorNumber)
+        /// <summary>
+        /// Convert a color number to the name of the color.
+        /// </summary>
+        /// <param name="colorNumber"></param>
+        /// <returns></returns>
+        private string getColorNameByNumber(int colorNumber)
         {
-            string color = "-";
+            string color = "";
             if (Program.ev3Messenger.IsConnected)
             {
                 switch (colorNumber)
@@ -538,6 +621,11 @@ namespace Run4Fun
             return color;
         }
 
+        /// <summary>
+        /// Get X-coordinate for lane.
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <returns></returns>
         private int getTileXCoord(int tile)
         {
             int middleTileX = (GameConstants.WINDOW_WIDTH / 2) - (GameConstants.TILE_WIDTH / 2);
@@ -564,44 +652,17 @@ namespace Run4Fun
             return x;
         }
 
-        private Vector2 generateTilePositionOnPlayer()
-        {
-            int x;
-            int y;
-            switch (currentTile)
-            {
-                case 1:
-                    x = getTileXCoord(1);
-                    break;
-                case 2:
-                    x = getTileXCoord(2);
-                    break;
-                case 3:
-                default:
-                    x = getTileXCoord(3);
-                    break;
-                case 4:
-                    x = getTileXCoord(4);
-                    break;
-                case 5:
-                    x = getTileXCoord(5);
-                    break;
-            }
-            y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
-
-            return new Vector2(x, y);
-        }
-
         /// <summary>
-        /// Generates random position for tiles.
+        /// Generates a tile on a random position, if spawnOnPlayer is true, the tile will be in the player's current lane.
         /// </summary>
+        /// <param name="spawnOnPlayer"></param>
         /// <returns></returns>
-        private Vector2 generateTilePosition()
+        private Vector2 generateTilePosition(bool spawnOnPlayer)
         {
             int randomNumber = random.Next(5);
             int x;
             int y;
-            switch (randomNumber)
+            switch (spawnOnPlayer ? currentLane : randomNumber)
             {
                 case 0:
                     x = getTileXCoord(1);
@@ -635,18 +696,23 @@ namespace Run4Fun
 
             spriteBatch.Begin();
 
-            // Draw background
+            // Draw background.
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
 
+            // Draw score.
             spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.colorText);
             spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.colorTextNumber);
 
+            // Draw current level.
             spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.colorText);
             spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
 
+            // Draw boost and boost bar.
             spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), GameConstants.colorText);
             spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
             spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
+
+            // If boost amount is 100 or above, show "MAX BOOST".
             if (boostAmount >= 100)
             {
                 spriteBatch.DrawString(font, "MAX BOOST", new Vector2(10, 570), GameConstants.colorText);
@@ -663,7 +729,7 @@ namespace Run4Fun
             if (colorEventEnabled)
             {
                 if (Program.ev3Messenger.IsConnected)
-                    spriteBatch.DrawString(bigfont, "BOOST ON " + convertColorNumberToString(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+                    spriteBatch.DrawString(bigfont, "BOOST ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
                 else
                     spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
             }
