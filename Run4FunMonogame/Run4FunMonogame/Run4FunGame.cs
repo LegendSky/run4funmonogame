@@ -50,7 +50,7 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0, tenthSecondTimerSecond = 0;
+        private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, thirtySecondTimer = 0, tenthSecondTimer = 0, beginGameTimer = 0;
         private bool recentlyLeveled = false;
 
         // Milliseconds before spawning next wave.
@@ -85,6 +85,7 @@ namespace Run4Fun
         {
             currentLane = (int)lanePlayer.LANE_3_GREEN;
             updateBoostBar();
+
             base.Initialize();
         }
 
@@ -180,6 +181,8 @@ namespace Run4Fun
 
             if (tenthSecondTimer >= 50)
             {
+                spawnAndRemoveParticles();
+
                 if (boostEnabled)
                 {
                     if (boostAmount <= 0)
@@ -193,10 +196,11 @@ namespace Run4Fun
                 }
             }
 
+            // To clear left-over messages from last game.
             if (gameJustStarted)
             {
-                tenthSecondTimerSecond += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (tenthSecondTimerSecond >= 100)
+                beginGameTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (beginGameTimer >= 100)
                 {
                     gameJustStarted = false;
                 }
@@ -228,16 +232,20 @@ namespace Run4Fun
                 spawnAndRemoveTiles();
             }
 
-            spawnAndRemoveParticles();
+
 
             // Increase tile spawn frequency.
-            frequencyTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (frequencyTimer >= 30000)
+            thirtySecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (thirtySecondTimer >= 30000)
             {
-                frequencyTimer = 0;
+                thirtySecondTimer = 0;
+
+                levelUp();
+
+                // Increase spawn frequency.
                 if (tileGenerationFrequency > 1000)
                 {
-                    tileGenerationFrequency -= 100; // lower is harder
+                    tileGenerationFrequency -= 100;
                 }
             }
 
@@ -247,8 +255,6 @@ namespace Run4Fun
             {
                 twentySecondTimer = 0;
                 startColorBoostEvent();
-
-                levelUp();
             }
 
             if (player.position.X == newPositionX)
@@ -307,7 +313,7 @@ namespace Run4Fun
             // Boost shouldn't be on player's position.
             while (currentLaneIsBoostColor())
             {
-                colorForBoost = random.Next(1, 6);
+                colorForBoost = random.Next(5) + 1;
             }
 
             colorEventEnabled = true;
@@ -326,12 +332,16 @@ namespace Run4Fun
                     if (message.ValueAsText == "Left")
                     {
                         if (!gameJustStarted)
+                        {
                             moveLeftPc();
+                        }
                     }
                     else if (message.ValueAsText == "Right")
                     {
                         if (!gameJustStarted)
+                        {
                             moveRightPc();
+                        }
                     }
                 }
                 else if (message != null && message.MailboxTitle == "Color")
@@ -365,17 +375,27 @@ namespace Run4Fun
         private void spawnAndRemoveTiles()
         {
             // 1 to 3 tiles will spawn on random lanes.
-            int repeat = random.Next(1, 4);
-            for (int i = 0; i < repeat; i++)
+            int repeat = random.Next(3) + 1;
+
+            // Spawn completely random.
+            /*for (int i = 0; i < repeat; i++)
             {
                 tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition(false)));
+            }*/
+
+            // Spawn without duplicates.
+            foreach (int x in generateXCoordinatesWithoutDupes(repeat))
+            {
+                tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), new Vector2(x, getRandomYCoordinate())));
             }
 
             // 50% chance to spawn tile on the player's lane.
-            if (random.Next(1, 3) == 1)
+            if ((random.Next(2) + 1) == 1)
             {
                 tiles.Add(new Tile(Content.Load<Texture2D>("bigtile"), generateTilePosition(true)));
             }
+
+            removeOverlappingTiles();
 
             // Remove out of vision tiles.
             for (int i = 0; i < tiles.Count; i++)
@@ -383,6 +403,32 @@ namespace Run4Fun
                 if (tiles[i].position.Y > 1080)
                     tiles.Remove(tiles[i]);
             }
+        }
+
+        private List<int> generateXCoordinatesWithoutDupes(int amount)
+        {
+            int size = 5;
+            if (amount > size)
+            {
+                throw new IndexOutOfRangeException("Amount too high, should only be up to 5.");
+            }
+
+            List<int> listNumbers = new List<int>(size);
+            for (int i = 1; i <= size; i++)
+            {
+                listNumbers.Add(i);
+            }
+
+            List<int> listXCoordinates = new List<int>(amount);
+            for (int i = 0; i < amount; i++)
+            {
+                int index = random.Next(listNumbers.Count);
+                int randomNum = listNumbers[index];
+                int x = getTileXCoord(randomNum);
+                listNumbers.RemoveAt(index);
+                listXCoordinates.Add(x);
+            }
+            return listXCoordinates;
         }
 
         /// <summary>
@@ -501,19 +547,7 @@ namespace Run4Fun
             {
                 if (playerAndTileCollide(player, tiles[i]))
                 {
-                    while (currentLane != (int)lanePlayer.LANE_3_GREEN)
-                    {
-                        if (currentLane > (int)lanePlayer.LANE_3_GREEN)
-                        {
-                            currentLane -= 1;
-                            moveLeftEV3();
-                        }
-                        else
-                        {
-                            currentLane += 1;
-                            moveRightEV3();
-                        }
-                    }
+                    putEV3InOriginalPosition();
                     gameJustStarted = true;
                     stopPlayingSound();
                     new UsernameForm(score).ShowDialog();
@@ -522,9 +556,27 @@ namespace Run4Fun
             }
         }
 
+        private void putEV3InOriginalPosition()
+        {
+            while (currentLane != (int)lanePlayer.LANE_3_GREEN)
+            {
+                if (currentLane > (int)lanePlayer.LANE_3_GREEN)
+                {
+                    currentLane -= 1;
+                    moveLeftEV3();
+                }
+                else
+                {
+                    currentLane += 1;
+                    moveRightEV3();
+                }
+            }
+        }
+
         private void startPlayingGameSong()
         {
             MediaPlayer.Play(gameSong);
+            MediaPlayer.Volume = 0.2f;
         }
 
         /// <summary>
@@ -628,7 +680,6 @@ namespace Run4Fun
             LANE_1_BLACK = 1, // Black
             LANE_2_BLUE = 2, // Blue
             LANE_3_GREEN = 3, // Green
-            //LANE_3_GREEN = 6, // Color sensor bug: sees green as white.
             LANE_4_YELLOW = 4, // Yellow
             LANE_5_RED = 5 // Red
         }
@@ -645,6 +696,30 @@ namespace Run4Fun
             Rectangle tileRect = new Rectangle((int)tile.position.X, (int)tile.position.Y, tile.image.Width, tile.image.Height);
 
             return playerRect.Intersects(tileRect);
+        }
+
+        /// <summary>
+        /// Checks if tiles collide with eachother, and if so remove the colliding tile.
+        /// </summary>
+        /// <param name="tiles"></param>
+        /// <returns></returns>
+        private void removeOverlappingTiles()
+        {
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                Tile tile1 = tiles[i];
+                Rectangle tile1Rectangle = new Rectangle((int)tile1.position.X, (int)tile1.position.Y, tile1.image.Width, tile1.image.Height);
+
+                for (int j = 0; j < tiles.Count; j++)
+                {
+                    Tile tile2 = tiles[j];
+                    Rectangle tile2Rectangle = new Rectangle((int)tile2.position.X, (int)tile2.position.Y, tile2.image.Width, tile2.image.Height);
+                    if (tile1Rectangle.Intersects(tile2Rectangle) && tile1Rectangle != tile2Rectangle)
+                    {
+                        tiles.RemoveAt(j);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -776,31 +851,36 @@ namespace Run4Fun
         /// <returns></returns>
         private Vector2 generateTilePosition(bool spawnOnPlayer)
         {
-            int randomNumber = random.Next(5);
+            int randomNumber = random.Next(5) + 1;
             int x;
             int y;
             switch (spawnOnPlayer ? currentLane : randomNumber)
             {
-                case 0:
+                case 1:
                     x = getTileXCoord(1);
                     break;
-                case 1:
+                case 2:
                     x = getTileXCoord(2);
                     break;
-                case 2:
+                case 3:
                     x = getTileXCoord(3);
                     break;
-                case 3:
+                case 4:
                 default:
                     x = getTileXCoord(4);
                     break;
-                case 4:
+                case 5:
                     x = getTileXCoord(5);
                     break;
             }
-            y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
+            y = -random.Next(GameConstants.TILE_HEIGHT, 2 * GameConstants.WINDOW_HEIGHT);
 
             return new Vector2(x, y);
+        }
+
+        private int getRandomYCoordinate()
+        {
+            return -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
         }
 
         /// <summary>
@@ -856,11 +936,13 @@ namespace Run4Fun
                 spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
             }
 
+            // Draw player.
             if (GameConstants.drawPlayerEnabled)
             {
                 spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
             }
 
+            // Draw particles.
             if (GameConstants.drawFallingParticles && boostEnabled)
             {
                 foreach (FallingParticle particle in particles)
@@ -872,24 +954,34 @@ namespace Run4Fun
             if (colorEventEnabled)
             {
                 if (Program.ev3Messenger.IsConnected)
-                    spriteBatch.DrawString(bigfont, "BOOST ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+                {
+                    drawTextInMiddle("BOOST ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                }
                 else
-                    spriteBatch.DrawString(bigfont, "BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", new Vector2(500, 200), colorEventColor());
+                {
+                    drawTextInMiddle("BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                }
             }
 
             if (gamePaused)
             {
-                spriteBatch.DrawString(bigfont, "GAME PAUSED", new Vector2(700, 400), Color.Red);
+                drawTextInMiddle("GAME PAUSED", bigfont, 400, GameConstants.colorPause);
             }
 
             if (recentlyLeveled)
             {
-                spriteBatch.DrawString(bigfont, "LEVEL UP", new Vector2(700, 500), Color.Green);
+                drawTextInMiddle("LEVEL " + level, bigfont, 300, GameConstants.colorLeveled);
             }
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void drawTextInMiddle(string text, SpriteFont font, int y, Color color)
+        {
+            int middleX = (GameConstants.WINDOW_WIDTH / 2) - (int)(font.MeasureString(text).Length() / 2);
+            spriteBatch.DrawString(font, text, new Vector2(middleX, y), color);
         }
 
         protected override void OnExiting(Object sender, EventArgs args)

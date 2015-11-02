@@ -31,6 +31,8 @@
             this.hiscoresListBox = new System.Windows.Forms.ListBox();
             this.btnClear = new System.Windows.Forms.Button();
             this.btnBackStart = new System.Windows.Forms.Button();
+            this.lbUsername = new System.Windows.Forms.Label();
+            this.lbScore = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // hiscoresListBox
@@ -39,9 +41,9 @@
             this.hiscoresListBox.Font = new System.Drawing.Font("Consolas", 48F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.hiscoresListBox.FormattingEnabled = true;
             this.hiscoresListBox.ItemHeight = 75;
-            this.hiscoresListBox.Location = new System.Drawing.Point(460, 100);
+            this.hiscoresListBox.Location = new System.Drawing.Point(460, 175);
             this.hiscoresListBox.Name = "hiscoresListBox";
-            this.hiscoresListBox.Size = new System.Drawing.Size(1000, 754);
+            this.hiscoresListBox.Size = new System.Drawing.Size(1000, 679);
             this.hiscoresListBox.TabIndex = 4;
             // 
             // btnClear
@@ -66,12 +68,38 @@
             this.btnBackStart.UseVisualStyleBackColor = true;
             this.btnBackStart.Click += new System.EventHandler(this.btnBackStart_Click);
             // 
+            // lbUsername
+            // 
+            this.lbUsername.AutoSize = true;
+            this.lbUsername.BackColor = System.Drawing.Color.Transparent;
+            this.lbUsername.Font = new System.Drawing.Font("Consolas", 48F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbUsername.ForeColor = System.Drawing.Color.Gold;
+            this.lbUsername.Location = new System.Drawing.Point(447, 88);
+            this.lbUsername.Name = "lbUsername";
+            this.lbUsername.Size = new System.Drawing.Size(312, 75);
+            this.lbUsername.TabIndex = 12;
+            this.lbUsername.Text = "Username";
+            // 
+            // lbScore
+            // 
+            this.lbScore.AutoSize = true;
+            this.lbScore.BackColor = System.Drawing.Color.Transparent;
+            this.lbScore.Font = new System.Drawing.Font("Consolas", 48F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbScore.ForeColor = System.Drawing.Color.Gold;
+            this.lbScore.Location = new System.Drawing.Point(1155, 88);
+            this.lbScore.Name = "lbScore";
+            this.lbScore.Size = new System.Drawing.Size(207, 75);
+            this.lbScore.TabIndex = 17;
+            this.lbScore.Text = "Score";
+            // 
             // HiscoresForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::Run4Fun.Properties.Resources.bg;
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.lbScore);
+            this.Controls.Add(this.lbUsername);
             this.Controls.Add(this.btnBackStart);
             this.Controls.Add(this.btnClear);
             this.Controls.Add(this.hiscoresListBox);
@@ -79,6 +107,7 @@
             this.Text = "Run4Fun Hiscores";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.HiscoresForm_FormClosed);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -86,5 +115,7 @@
         private System.Windows.Forms.ListBox hiscoresListBox;
         private System.Windows.Forms.Button btnClear;
         private System.Windows.Forms.Button btnBackStart;
+        private System.Windows.Forms.Label lbUsername;
+        private System.Windows.Forms.Label lbScore;
     }
 }
