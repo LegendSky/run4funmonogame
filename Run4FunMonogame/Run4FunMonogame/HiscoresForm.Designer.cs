@@ -43,7 +43,7 @@
             this.hiscoresListBox.ItemHeight = 75;
             this.hiscoresListBox.Location = new System.Drawing.Point(460, 175);
             this.hiscoresListBox.Name = "hiscoresListBox";
-            this.hiscoresListBox.Size = new System.Drawing.Size(1000, 679);
+            this.hiscoresListBox.Size = new System.Drawing.Size(1000, 754);
             this.hiscoresListBox.TabIndex = 4;
             // 
             // btnClear
