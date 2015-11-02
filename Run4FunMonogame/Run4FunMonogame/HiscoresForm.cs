@@ -25,7 +25,8 @@ namespace Run4Fun
             convertTxtToListAndPutInListBox();
         }
 
-        public HiscoresForm(string username, int score) : this()
+        public HiscoresForm(string username, int score)
+            : this()
         {
             writeNewHiscoreToTxt(username, score);
             convertTxtToListAndPutInListBox();
@@ -62,7 +63,16 @@ namespace Run4Fun
             {
                 string[] array = hiscores[i].Split(' ');
                 int count = i + 1;
-                hiscoresListBox.Items.Add(count + ". " + array[0].PadRight(18 - count.ToString().Length) + array[1]);
+                string score = array[array.Length - 1];
+
+                string name = "";
+                for (int j = 0; j < array.Length - 1; j++)
+                {
+                    bool lastIterationOfArray = (j == array.Length - 1);
+                    name += array[j] + (lastIterationOfArray ? "" : " ");
+                }
+
+                hiscoresListBox.Items.Add(count + ". " + name.PadRight(18 - count.ToString().Length) + score);
             }
 
             sr.Close();
@@ -101,7 +111,7 @@ namespace Run4Fun
         private int getScoreFromHiscore(string hiscore)
         {
             string[] array = hiscore.Split(' ');
-            return Convert.ToInt32(array[1]);
+            return Convert.ToInt32(array[array.Length - 1]);
         }
 
         private void HiscoresForm_FormClosed(object sender, FormClosedEventArgs e)
