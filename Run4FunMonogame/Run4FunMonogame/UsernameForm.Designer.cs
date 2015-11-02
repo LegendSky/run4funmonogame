@@ -59,9 +59,9 @@
             this.lbUsername.Font = new System.Drawing.Font("Consolas", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbUsername.Location = new System.Drawing.Point(42, 19);
             this.lbUsername.Name = "lbUsername";
-            this.lbUsername.Size = new System.Drawing.Size(285, 32);
+            this.lbUsername.Size = new System.Drawing.Size(300, 32);
             this.lbUsername.TabIndex = 2;
-            this.lbUsername.Text = "Enter you username";
+            this.lbUsername.Text = "Enter your username";
             // 
             // btnSkip
             // 

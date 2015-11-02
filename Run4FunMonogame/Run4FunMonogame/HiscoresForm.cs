@@ -61,7 +61,8 @@ namespace Run4Fun
             for (int i = 0; i < hiscores.Count; i++)
             {
                 string[] array = hiscores[i].Split(' ');
-                hiscoresListBox.Items.Add(i + 1 + ". " + array[0].PadRight(15) + array[1]);
+                int count = i + 1;
+                hiscoresListBox.Items.Add(count + ". " + array[0].PadRight(18 - count.ToString().Length) + array[1]);
             }
 
             sr.Close();

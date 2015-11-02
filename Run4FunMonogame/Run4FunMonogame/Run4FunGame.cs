@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework.Input;
 using Run4Fun.Sprites;
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace Run4Fun
 {
@@ -28,7 +30,7 @@ namespace Run4Fun
         private Rectangle boostRectangle;
         private Texture2D boostTexture;
 
-        private int tileSpeed = 8;
+        private int tileSpeed = 10;
 
         // The current tile the player is on.
         private int currentLane;
@@ -46,7 +48,8 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
+        private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
+        private bool recentlyLeveled = false;
 
         // Milliseconds before spawning next wave.
         private int tileGenerationFrequency = 2500;
@@ -55,6 +58,9 @@ namespace Run4Fun
         private int newPositionX;
 
         private bool gamePaused = false;
+
+        private SoundEffect soundEffect;
+        private Song gameSong;
 
         public Run4FunGame()
         {
@@ -97,6 +103,12 @@ namespace Run4Fun
             font = Content.Load<SpriteFont>("font");
             bigfont = Content.Load<SpriteFont>("bigfont");
             hugefont = Content.Load<SpriteFont>("hugefont");
+
+            gameSong = Content.Load<Song>("gamesong");
+            startPlayingGameSong();
+            // Sound
+            // soundEffect = Content.Load<SoundEffect>("gamesound.mp3");
+            //  soundEffect.Play();
         }
 
         /// <summary>
@@ -144,6 +156,16 @@ namespace Run4Fun
                 addBoostAndScoreAndUpdate();
             }
 
+            if (recentlyLeveled)
+            {
+                twoSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (twoSecondTimer >= 2000)
+                {
+                    twoSecondTimer = 0;
+                    recentlyLeveled = false;
+                }
+            }
+
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (boostEnabled)
@@ -153,7 +175,7 @@ namespace Run4Fun
                     boostEnabled = false;
                 }
 
-                if (tenthSecondTimer >= 100)
+                if (tenthSecondTimer >= 50)
                 {
                     tenthSecondTimer = 0;
                     boostAmount--;
@@ -205,7 +227,7 @@ namespace Run4Fun
                 twentySecondTimer = 0;
                 startColorBoostEvent();
 
-                nextLevel();
+                levelUp();
             }
 
             if (player.position.X == newPositionX)
@@ -228,10 +250,11 @@ namespace Run4Fun
         /// <summary>
         /// Increase level and tilespeed.
         /// </summary>
-        private void nextLevel()
+        private void levelUp()
         {
             level++;
             tileSpeed++;
+            recentlyLeveled = true;
         }
 
         /// <summary>
@@ -305,7 +328,7 @@ namespace Run4Fun
         {
             if (boostAmount <= 100)
             {
-                boostAmount += 20;
+                boostAmount += 10;
             }
 
             score += 5000;
@@ -352,7 +375,19 @@ namespace Run4Fun
 
             if (pauseButtonPressed())
             {
-                gamePaused = !gamePaused;
+                if (gamePaused)
+                {
+                    gamePaused = false;
+                    startPlayingGameSong();
+                }
+                else
+                {
+                    gamePaused = true;
+                    stopPlayingSound();
+                }
+
+               // gamePaused = !gamePaused;
+
             }
 
             if (gamePaused)
@@ -384,18 +419,14 @@ namespace Run4Fun
                 }
             }
 
-            else if (boostPressed())
+            if (boostPressed() && boostAmount > 0)
             {
-                if (boostEnabled)
-                {
-                    boostEnabled = false;
-                }
-                else if (boostAmount > 0)
-                {
-                    boostEnabled = true;
-                }
+                boostEnabled = true;
             }
-
+            else
+            {
+                boostEnabled = false;
+            }
         }
 
         /// <summary>
@@ -432,10 +463,24 @@ namespace Run4Fun
             {
                 if (playerAndTileCollide(player, tiles[i]))
                 {
+                    stopPlayingSound();
                     new UsernameForm(score).ShowDialog();
                     Environment.Exit(0);
                 }
             }
+        }
+
+        private void startPlayingGameSong()
+        {
+            MediaPlayer.Play(gameSong);
+        }
+
+        /// <summary>
+        /// Stop the mediaplayer.
+        /// </summary>
+        private void stopPlayingSound()
+        {
+            MediaPlayer.Stop();
         }
 
         /// <summary>
@@ -486,13 +531,18 @@ namespace Run4Fun
         }
 
         /// <summary>
-        /// Checks whether A or Space is pressed.
+        /// Checks whether A or Space is held.
         /// </summary>
         /// <returns></returns>
         private bool boostPressed()
         {
-            return ((gamePadState.Buttons.A == ButtonState.Pressed && prevGamePadState.Buttons.A != ButtonState.Pressed)
-                || (keyState.IsKeyDown(Keys.Space) && prevKeyState.IsKeyUp(Keys.Space)));
+            bool aPressed = gamePadState.Buttons.A == ButtonState.Pressed;
+            bool aReleased = gamePadState.Buttons.A == ButtonState.Released;
+
+            bool spacePressed = keyState.IsKeyDown(Keys.Space);
+            bool spaceReleased = keyState.IsKeyUp(Keys.Space);
+
+            return (aPressed && !aReleased) || (spacePressed && !spaceReleased);
         }
 
         /// <summary>
@@ -515,6 +565,17 @@ namespace Run4Fun
             LANE_1_BLACK = 1, // Black
             LANE_2_BLUE = 2, // Blue
             LANE_3_GREEN = 3, // Green
+            //LANE_3_GREEN = 6, // Color sensor bug: sees green as white.
+            LANE_4_YELLOW = 4, // Yellow
+            LANE_5_RED = 5 // Red
+        }
+
+        private enum colorLane
+        {
+            LANE_1_BLACK = 1, // Black
+            LANE_2_BLUE = 2, // Blue
+            //LANE_3_GREEN = 3, // Green
+            LANE_3_GREEN = 6, // Color sensor bug: sees green as white.
             LANE_4_YELLOW = 4, // Yellow
             LANE_5_RED = 5 // Red
         }
@@ -742,6 +803,11 @@ namespace Run4Fun
                 spriteBatch.DrawString(bigfont, "GAME PAUSED", new Vector2(700, 400), Color.Red);
             }
 
+            if (recentlyLeveled)
+            {
+                spriteBatch.DrawString(bigfont, "LEVEL UP", new Vector2(700, 500), Color.Green);
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -750,6 +816,7 @@ namespace Run4Fun
         protected override void OnExiting(Object sender, EventArgs args)
         {
             base.OnExiting(sender, args);
+            stopPlayingSound();
             new StartForm().ShowDialog();
         }
     }
