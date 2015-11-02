@@ -91,6 +91,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Run4FunGame.cs" />
+    <Compile Include="Sprites\FallingParticle.cs" />
     <Compile Include="Sprites\Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -126,6 +127,7 @@
   <ItemGroup>
     <Content Include="Content\background.png" />
     <Content Include="Content\bigtile.png" />
+    <Content Include="Content\fallingparticle.png" />
     <Content Include="Content\player.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

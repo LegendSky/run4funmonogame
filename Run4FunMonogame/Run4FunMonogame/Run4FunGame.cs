@@ -29,6 +29,7 @@ namespace Run4Fun
 
         private Rectangle boostRectangle;
         private Texture2D boostTexture;
+        private Texture2D fallingParticleTexture;
 
         private int tileSpeed = 10;
 
@@ -39,6 +40,7 @@ namespace Run4Fun
         private int level = 1;
         private Player player;
         private List<Tile> tiles = new List<Tile>();
+        private List<FallingParticle> particles = new List<FallingParticle>();
 
         private Random random = new Random();
 
@@ -48,7 +50,7 @@ namespace Run4Fun
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
 
-        private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0;
+        private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, frequencyTimer = 0, tenthSecondTimer = 0, tenthSecondTimerSecond = 0;
         private bool recentlyLeveled = false;
 
         // Milliseconds before spawning next wave.
@@ -61,6 +63,8 @@ namespace Run4Fun
 
         private SoundEffect soundEffect;
         private Song gameSong;
+
+        private bool gameJustStarted = true;
 
         public Run4FunGame()
         {
@@ -97,6 +101,8 @@ namespace Run4Fun
             backgroundImage = Content.Load<Texture2D>("background");
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
             boostTexture = Content.Load<Texture2D>("boost");
+
+            fallingParticleTexture = Content.Load<Texture2D>("fallingparticle");
 
             // Load fonts.
             smallfont = Content.Load<SpriteFont>("smallfont");
@@ -147,6 +153,9 @@ namespace Run4Fun
             // Descent tiles.
             descentTiles();
 
+            // Descent particles.
+            descentParticles();
+
             // Increase score.
             increaseScore();
 
@@ -168,18 +177,28 @@ namespace Run4Fun
 
             // Every tenth second.
             tenthSecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (boostEnabled)
-            {
-                if (boostAmount <= 0)
-                {
-                    boostEnabled = false;
-                }
 
-                if (tenthSecondTimer >= 50)
+            if (tenthSecondTimer >= 50)
+            {
+                if (boostEnabled)
                 {
+                    if (boostAmount <= 0)
+                    {
+                        boostEnabled = false;
+                    }
+
                     tenthSecondTimer = 0;
                     boostAmount--;
                     updateBoostBar();
+                }
+            }
+
+            if (gameJustStarted)
+            {
+                tenthSecondTimerSecond += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (tenthSecondTimerSecond >= 100)
+                {
+                    gameJustStarted = false;
                 }
             }
 
@@ -208,6 +227,8 @@ namespace Run4Fun
                 tileGenerationTimer = 0;
                 spawnAndRemoveTiles();
             }
+
+            spawnAndRemoveParticles();
 
             // Increase tile spawn frequency.
             frequencyTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -304,11 +325,13 @@ namespace Run4Fun
                 {
                     if (message.ValueAsText == "Left")
                     {
-                        moveLeftPc();
+                        if (!gameJustStarted)
+                            moveLeftPc();
                     }
                     else if (message.ValueAsText == "Right")
                     {
-                        moveRightPc();
+                        if (!gameJustStarted)
+                            moveRightPc();
                     }
                 }
                 else if (message != null && message.MailboxTitle == "Color")
@@ -363,6 +386,21 @@ namespace Run4Fun
         }
 
         /// <summary>
+        /// Spawn new particles and remove particles out of vision.
+        /// </summary>
+        private void spawnAndRemoveParticles()
+        {
+            particles.Add(new FallingParticle(Content.Load<Texture2D>("fallingparticle"), generateParticlePosition()));
+
+            // Remove out of vision particles.
+            for (int i = 0; i < particles.Count; i++)
+            {
+                if (particles[i].position.Y > 1080)
+                    particles.Remove(particles[i]);
+            }
+        }
+
+        /// <summary>
         /// Actions for key presses.
         /// </summary>
         private void handleKeys()
@@ -386,7 +424,7 @@ namespace Run4Fun
                     stopPlayingSound();
                 }
 
-               // gamePaused = !gamePaused;
+                // gamePaused = !gamePaused;
 
             }
 
@@ -463,6 +501,20 @@ namespace Run4Fun
             {
                 if (playerAndTileCollide(player, tiles[i]))
                 {
+                    while (currentLane != (int)lanePlayer.LANE_3_GREEN)
+                    {
+                        if (currentLane > (int)lanePlayer.LANE_3_GREEN)
+                        {
+                            currentLane -= 1;
+                            moveLeftEV3();
+                        }
+                        else
+                        {
+                            currentLane += 1;
+                            moveRightEV3();
+                        }
+                    }
+                    gameJustStarted = true;
                     stopPlayingSound();
                     new UsernameForm(score).ShowDialog();
                     Environment.Exit(0);
@@ -491,6 +543,17 @@ namespace Run4Fun
             for (int i = 0; i < tiles.Count; i++)
             {
                 tiles[i].position.Y += boostEnabled ? tileSpeed * 5 : tileSpeed;
+            }
+        }
+
+        /// <summary>
+        /// Descent all particles, speed depends on particleSpeed.
+        /// </summary>
+        private void descentParticles()
+        {
+            for (int i = 0; i < particles.Count; i++)
+            {
+                particles[i].position.Y += /*boostEnabled ? GameConstants.particleSpeed * 5 : */GameConstants.particleSpeed;
             }
         }
 
@@ -566,16 +629,6 @@ namespace Run4Fun
             LANE_2_BLUE = 2, // Blue
             LANE_3_GREEN = 3, // Green
             //LANE_3_GREEN = 6, // Color sensor bug: sees green as white.
-            LANE_4_YELLOW = 4, // Yellow
-            LANE_5_RED = 5 // Red
-        }
-
-        private enum colorLane
-        {
-            LANE_1_BLACK = 1, // Black
-            LANE_2_BLUE = 2, // Blue
-            //LANE_3_GREEN = 3, // Green
-            LANE_3_GREEN = 6, // Color sensor bug: sees green as white.
             LANE_4_YELLOW = 4, // Yellow
             LANE_5_RED = 5 // Red
         }
@@ -751,6 +804,21 @@ namespace Run4Fun
         }
 
         /// <summary>
+        /// Generates particle on a random position.
+        /// </summary>
+        /// <returns></returns>
+        private Vector2 generateParticlePosition()
+        {
+            int randomNumber = random.Next(5);
+            int x;
+            int y;
+            x = random.Next(0, GameConstants.WINDOW_WIDTH);
+            y = -random.Next(GameConstants.TILE_HEIGHT, GameConstants.WINDOW_HEIGHT);
+
+            return new Vector2(x, y);
+        }
+
+        /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
@@ -788,7 +856,18 @@ namespace Run4Fun
                 spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
             }
 
-            spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
+            if (GameConstants.drawPlayerEnabled)
+            {
+                spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
+            }
+
+            if (GameConstants.drawFallingParticles && boostEnabled)
+            {
+                foreach (FallingParticle particle in particles)
+                {
+                    spriteBatch.Draw(fallingParticleTexture, particle.position, GameConstants.colorParticles);
+                }
+            }
 
             if (colorEventEnabled)
             {
