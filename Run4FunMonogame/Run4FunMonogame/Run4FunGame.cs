@@ -45,7 +45,7 @@ namespace Run4Fun
         private Random random = new Random();
 
         private bool boostEnabled = false;
-        private int boostAmount = 100;
+        private int boostAmount = 10;
         private int colorForBoost;
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
@@ -920,14 +920,14 @@ namespace Run4Fun
             spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
 
             // Draw boost and boost bar.
-            spriteBatch.DrawString(font, "BOOST: ", new Vector2(10, 350), GameConstants.colorText);
+            spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.colorText);
             spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
             spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
 
-            // If boost amount is 100 or above, show "MAX BOOST".
+            // If boost amount is 100 or above, show "MAX ENERGY".
             if (boostAmount >= 100)
             {
-                spriteBatch.DrawString(font, "MAX BOOST", new Vector2(10, 570), GameConstants.colorText);
+                spriteBatch.DrawString(font, "MAX ENERGY", new Vector2(10, 570), GameConstants.colorText);
             }
 
             // Draw tiles.

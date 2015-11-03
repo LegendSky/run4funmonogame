@@ -16,7 +16,7 @@ namespace Run4Fun.Sprites
             WINDOW_WIDTH = 1920,
             WINDOW_HEIGHT = 1080;
 
-        public const bool collisionEnabled = false;
+        public const bool collisionEnabled = true;
         public const int playerSpeedAcceleration = 10; // 10 or 23
         public const bool drawPlayerEnabled = true;
         public const bool drawFallingParticles = true;

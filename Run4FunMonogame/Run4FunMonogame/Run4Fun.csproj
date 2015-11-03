@@ -15,7 +15,7 @@
     <MonoGameContentBuilderExe>
     </MonoGameContentBuilderExe>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\Corsair\Google Drive\A4B\Proftaak\Run4Fun software\run4fun release2\</PublishUrl>
+    <PublishUrl>C:\Users\MSI\Desktop\run4fun release\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -27,7 +27,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <UpdateUrl>http://localhost/Run4Fun/</UpdateUrl>
     <ProductName>Run4Fun</ProductName>
-    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationRevision>15</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -65,7 +65,7 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>23DA9DBBC8AB18EB27D625A7511CD9C6DDA84707</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>566AA0EAEACD94331FFBD4E03FA4D7E594085CA5</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>
