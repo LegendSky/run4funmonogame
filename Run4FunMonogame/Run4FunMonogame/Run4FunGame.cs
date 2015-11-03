@@ -45,7 +45,7 @@ namespace Run4Fun
         private Random random = new Random();
 
         private bool boostEnabled = false;
-        private int boostAmount = 10;
+        private int boostAmount = 100;
         private int colorForBoost;
         private bool colorEventEnabled = false;
         private int colorBoostCountDown = 5;
