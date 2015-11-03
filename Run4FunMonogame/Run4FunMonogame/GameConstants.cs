@@ -16,7 +16,7 @@ namespace Run4Fun.Sprites
             WINDOW_WIDTH = 1920,
             WINDOW_HEIGHT = 1080;
 
-        public const bool collisionEnabled = true;
+        public const bool collisionEnabled = false;
         public const int playerSpeedAcceleration = 10; // 10 or 23
         public const bool drawPlayerEnabled = true;
         public const bool drawFallingParticles = true;
@@ -24,6 +24,8 @@ namespace Run4Fun.Sprites
 
         public static readonly Color colorText = Color.Gold;
         public static readonly Color colorTextNumber = Color.Gold;
+        public static readonly Color colorPause = Color.Red;
+        public static readonly Color colorLeveled = Color.Green;
         public static readonly Color colorTile = Color.White;
         public static readonly Color colorPlayer = Color.Red;
         public static readonly Color colorParticles = Color.Gray;
