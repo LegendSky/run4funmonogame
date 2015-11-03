@@ -49,7 +49,7 @@
             // btnClear
             // 
             this.btnClear.ForeColor = System.Drawing.Color.Red;
-            this.btnClear.Location = new System.Drawing.Point(1600, 790);
+            this.btnClear.Location = new System.Drawing.Point(1593, 865);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(149, 64);
             this.btnClear.TabIndex = 10;
@@ -60,7 +60,7 @@
             // btnBackStart
             // 
             this.btnBackStart.ForeColor = System.Drawing.Color.Black;
-            this.btnBackStart.Location = new System.Drawing.Point(1600, 690);
+            this.btnBackStart.Location = new System.Drawing.Point(1593, 782);
             this.btnBackStart.Name = "btnBackStart";
             this.btnBackStart.Size = new System.Drawing.Size(149, 64);
             this.btnBackStart.TabIndex = 11;

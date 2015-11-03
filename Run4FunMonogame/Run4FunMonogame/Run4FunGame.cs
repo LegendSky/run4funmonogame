@@ -280,7 +280,7 @@ namespace Run4Fun
         private void levelUp()
         {
             level++;
-            tileSpeed++;
+            tileSpeed += 2;
             recentlyLeveled = true;
         }
 
@@ -955,11 +955,11 @@ namespace Run4Fun
             {
                 if (Program.ev3Messenger.IsConnected)
                 {
-                    drawTextInMiddle("BOOST ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                    drawTextInMiddle("ENERGY ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
                 }
                 else
                 {
-                    drawTextInMiddle("BOOST IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                    drawTextInMiddle("ENERGY IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
                 }
             }
 
