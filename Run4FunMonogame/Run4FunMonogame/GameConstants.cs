@@ -10,7 +10,7 @@ namespace Run4Fun.Sprites
     {
         public const int START_ENERGY_AMOUNT = 10;
         public const bool COLLISION_ENABLED = true;
-        public const bool DRAW_PLAYER_ENABLED = false;
+        public const bool DRAW_PLAYER_ENABLED = true;
         public const int PLAYER_START_HEIGHT_OFFSET = 200;
 
         public const int PLAYER_WIDTH = 100,
