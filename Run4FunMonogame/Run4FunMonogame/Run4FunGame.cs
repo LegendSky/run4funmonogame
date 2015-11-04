@@ -27,8 +27,8 @@ namespace Run4Fun
         private GamePadState prevGamePadState, gamePadState;
         private Texture2D backgroundImage;
 
-        private Rectangle boostRectangle;
-        private Texture2D boostTexture;
+        private Rectangle energyRectangle;
+        private Texture2D energyBarTexture;
         private Texture2D fallingParticleTexture;
 
         private int tileSpeed = 10;
@@ -44,11 +44,11 @@ namespace Run4Fun
 
         private Random random = new Random();
 
-        private bool boostEnabled = false;
-        private int boostAmount = 10;
-        private int colorForBoost;
+        private bool dashEnabled = false;
+        private int energyAmount = 10;
+        private int colorForEnergy;
         private bool colorEventEnabled = false;
-        private int colorBoostCountDown = 5;
+        private int colorEnergyCountDown = 5;
 
         private int oneSecondTimer = 0, twoSecondTimer = 0, tileGenerationTimer = 0, twentySecondTimer = 0, thirtySecondTimer = 0, tenthSecondTimer = 0, beginGameTimer = 0;
         private bool recentlyLeveled = false;
@@ -84,7 +84,7 @@ namespace Run4Fun
         protected override void Initialize()
         {
             currentLane = (int)lanePlayer.LANE_3_GREEN;
-            updateBoostBar();
+            updateEnergyBar();
 
             base.Initialize();
         }
@@ -101,7 +101,7 @@ namespace Run4Fun
             // Load images.
             backgroundImage = Content.Load<Texture2D>("background");
             player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
-            boostTexture = Content.Load<Texture2D>("boost");
+            energyBarTexture = Content.Load<Texture2D>("energy");
 
             fallingParticleTexture = Content.Load<Texture2D>("fallingparticle");
 
@@ -161,9 +161,9 @@ namespace Run4Fun
             increaseScore();
 
             // Check if current tile is 
-            if (!Program.ev3Messenger.IsConnected && colorEventEnabled && currentLaneIsBoostColor())
+            if (!Program.ev3Messenger.IsConnected && colorEventEnabled && currentLaneIsEnergyColor())
             {
-                addBoostAndScoreAndUpdate();
+                addEnergyAndScoreAndUpdate();
             }
 
             if (recentlyLeveled)
@@ -183,16 +183,16 @@ namespace Run4Fun
             {
                 spawnAndRemoveParticles();
 
-                if (boostEnabled)
+                if (dashEnabled)
                 {
-                    if (boostAmount <= 0)
+                    if (energyAmount <= 0)
                     {
-                        boostEnabled = false;
+                        dashEnabled = false;
                     }
 
                     tenthSecondTimer = 0;
-                    boostAmount--;
-                    updateBoostBar();
+                    energyAmount--;
+                    updateEnergyBar();
                 }
             }
 
@@ -213,13 +213,13 @@ namespace Run4Fun
                 oneSecondTimer = 0;
                 if (colorEventEnabled)
                 {
-                    if (colorBoostCountDown <= 0)
+                    if (colorEnergyCountDown <= 0)
                     {
                         resetColorEvent();
                     }
                     else
                     {
-                        colorBoostCountDown--;
+                        colorEnergyCountDown--;
                     }
                 }
             }
@@ -254,7 +254,7 @@ namespace Run4Fun
             if (twentySecondTimer >= 20000)
             {
                 twentySecondTimer = 0;
-                startColorBoostEvent();
+                startColorEnergyEvent();
             }
 
             if (player.position.X == newPositionX)
@@ -267,11 +267,15 @@ namespace Run4Fun
         }
 
         /// <summary>
-        /// Update the boost bar.
+        /// Update the energy bar.
         /// </summary>
-        private void updateBoostBar()
+        private void updateEnergyBar()
         {
-            boostRectangle = new Rectangle(10, 520, boostAmount * 3, 50);
+            energyRectangle = new Rectangle(10, 520, energyAmount * 3, 50);
+
+            spriteBatch.Draw(energyBarTexture, new Rectangle(this.Window.ClientBounds.Width / 2 - energyBarTexture.Width / 2,
+                 30, (int)(energyBarTexture.Width * ((double)energyAmount / 100)), 44),
+                 new Rectangle(0, 45, energyBarTexture.Width, 44), Color.Red);
         }
 
         /// <summary>
@@ -290,30 +294,30 @@ namespace Run4Fun
         private void resetColorEvent()
         {
             colorEventEnabled = false;
-            colorBoostCountDown = 5;
-            colorForBoost = 0;
+            colorEnergyCountDown = 5;
+            colorForEnergy = 0;
         }
 
         /// <summary>
         /// Checkes whether the color is in the current lane.
         /// </summary>
         /// <returns></returns>
-        private bool currentLaneIsBoostColor()
+        private bool currentLaneIsEnergyColor()
         {
-            return colorForBoost == currentLane;
+            return colorForEnergy == currentLane;
         }
 
         /// <summary>
-        /// Start color boost event.
+        /// Start color energy event.
         /// </summary>
-        private void startColorBoostEvent()
+        private void startColorEnergyEvent()
         {
-            colorForBoost = random.Next(1, 6);
+            colorForEnergy = random.Next(1, 6);
 
-            // Boost shouldn't be on player's position.
-            while (currentLaneIsBoostColor())
+            // Energy shouldn't be on player's position.
+            while (currentLaneIsEnergyColor())
             {
-                colorForBoost = random.Next(5) + 1;
+                colorForEnergy = random.Next(5) + 1;
             }
 
             colorEventEnabled = true;
@@ -346,27 +350,27 @@ namespace Run4Fun
                 }
                 else if (message != null && message.MailboxTitle == "Color")
                 {
-                    if (colorEventEnabled && colorForBoost == message.ValueAsNumber)
+                    if (colorEventEnabled && colorForEnergy == message.ValueAsNumber)
                     {
-                        addBoostAndScoreAndUpdate();
+                        addEnergyAndScoreAndUpdate();
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Increase boost and score amount, reset the color event and update boost bar.
+        /// Increase energy and score amount, reset the color event and update energy bar.
         /// </summary>
-        private void addBoostAndScoreAndUpdate()
+        private void addEnergyAndScoreAndUpdate()
         {
-            if (boostAmount <= 100)
+            if (energyAmount <= 100)
             {
-                boostAmount += 10;
+                energyAmount += 10;
             }
 
             score += 5000;
             resetColorEvent();
-            updateBoostBar();
+            updateEnergyBar();
         }
 
         /// <summary>
@@ -503,13 +507,13 @@ namespace Run4Fun
                 }
             }
 
-            if (boostPressed() && boostAmount > 0)
+            if (dashPressed() && energyAmount > 0)
             {
-                boostEnabled = true;
+                dashEnabled = true;
             }
             else
             {
-                boostEnabled = false;
+                dashEnabled = false;
             }
         }
 
@@ -538,7 +542,7 @@ namespace Run4Fun
         /// </summary>
         private void checkForCollision()
         {
-            if (!GameConstants.collisionEnabled || boostEnabled)
+            if (!GameConstants.collisionEnabled || dashEnabled)
             {
                 return;
             }
@@ -594,7 +598,7 @@ namespace Run4Fun
         {
             for (int i = 0; i < tiles.Count; i++)
             {
-                tiles[i].position.Y += boostEnabled ? tileSpeed * 5 : tileSpeed;
+                tiles[i].position.Y += dashEnabled ? tileSpeed * 5 : tileSpeed;
             }
         }
 
@@ -605,7 +609,7 @@ namespace Run4Fun
         {
             for (int i = 0; i < particles.Count; i++)
             {
-                particles[i].position.Y += /*boostEnabled ? GameConstants.particleSpeed * 5 : */GameConstants.particleSpeed;
+                particles[i].position.Y += GameConstants.particleSpeed;
             }
         }
 
@@ -649,7 +653,7 @@ namespace Run4Fun
         /// Checks whether A or Space is held.
         /// </summary>
         /// <returns></returns>
-        private bool boostPressed()
+        private bool dashPressed()
         {
             bool aPressed = gamePadState.Buttons.A == ButtonState.Pressed;
             bool aReleased = gamePadState.Buttons.A == ButtonState.Released;
@@ -731,13 +735,13 @@ namespace Run4Fun
         }
 
         /// <summary>
-        /// The color for boost event.
+        /// The color for energy event.
         /// </summary>
         /// <returns></returns>
         private Color colorEventColor()
         {
             Color color;
-            switch (colorForBoost)
+            switch (colorForEnergy)
             {
                 case 1:
                     color = Color.Black;
@@ -919,13 +923,15 @@ namespace Run4Fun
             spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.colorText);
             spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
 
-            // Draw boost and boost bar.
-            spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.colorText);
-            spriteBatch.DrawString(hugefont, boostAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
-            spriteBatch.Draw(boostTexture, boostRectangle, Color.White);
+            energyBarTexture.Width = 12;
 
-            // If boost amount is 100 or above, show "MAX ENERGY".
-            if (boostAmount >= 100)
+            // Draw energy and energy bar.
+            spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.colorText);
+            spriteBatch.DrawString(hugefont, energyAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
+            spriteBatch.Draw(energyBarTexture, energyRectangle, Color.White);
+
+            // If energy amount is 100 or above, show "MAX ENERGY".
+            if (energyAmount >= 100)
             {
                 spriteBatch.DrawString(font, "MAX ENERGY", new Vector2(10, 570), GameConstants.colorText);
             }
@@ -943,7 +949,7 @@ namespace Run4Fun
             }
 
             // Draw particles.
-            if (GameConstants.drawFallingParticles && boostEnabled)
+            if (GameConstants.drawFallingParticles && dashEnabled)
             {
                 foreach (FallingParticle particle in particles)
                 {
@@ -955,11 +961,11 @@ namespace Run4Fun
             {
                 if (Program.ev3Messenger.IsConnected)
                 {
-                    drawTextInMiddle("ENERGY ON " + getColorNameByNumber(colorForBoost).ToUpper() + " " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                    drawTextInMiddle("ENERGY ON " + getColorNameByNumber(colorForEnergy).ToUpper() + " " + colorEnergyCountDown.ToString() + "s", bigfont, 200, colorEventColor());
                 }
                 else
                 {
-                    drawTextInMiddle("ENERGY IN LANE (" + colorForBoost + ") " + colorBoostCountDown.ToString() + "s", bigfont, 200, colorEventColor());
+                    drawTextInMiddle("ENERGY IN LANE (" + colorForEnergy + ") " + colorEnergyCountDown.ToString() + "s", bigfont, 200, colorEventColor());
                 }
             }
 
