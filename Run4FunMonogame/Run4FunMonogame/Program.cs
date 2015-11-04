@@ -11,7 +11,7 @@ namespace Run4Fun
     public static class Program
     {
         public static EV3Messenger ev3Messenger = new EV3Messenger();
-        private const string EV3_SERIAL_PORT = "COM40";
+        private const string EV3_SERIAL_PORT = "COM47";
 
         /// <summary>
         /// The main entry point for the application.

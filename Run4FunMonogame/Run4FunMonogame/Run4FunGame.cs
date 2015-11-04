@@ -45,7 +45,7 @@ namespace Run4Fun
         private Random random = new Random();
 
         private bool dashEnabled = false;
-        private int energyAmount = 10;
+        private int energyAmount = GameConstants.START_ENERGY_AMOUNT;
         private int colorForEnergy;
         private bool colorEventEnabled = false;
         private int colorEnergyCountDown = 5;
@@ -61,7 +61,6 @@ namespace Run4Fun
 
         private bool gamePaused = false;
 
-        private SoundEffect soundEffect;
         private Song gameSong;
 
         private bool gameJustStarted = true;
@@ -71,6 +70,7 @@ namespace Run4Fun
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferredBackBufferWidth = 1920;
             graphics.PreferredBackBufferHeight = 1080;
+            //graphics.ToggleFullScreen();
             Window.AllowUserResizing = true;
             Content.RootDirectory = "Content";
         }
@@ -100,7 +100,7 @@ namespace Run4Fun
 
             // Load images.
             backgroundImage = Content.Load<Texture2D>("background");
-            player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.playerWidth / 2), GameConstants.WINDOW_HEIGHT - 200));
+            player = new Player(Content.Load<Texture2D>("player"), new Vector2((GameConstants.WINDOW_WIDTH / 2) - (GameConstants.PLAYER_WIDTH / 2), GameConstants.WINDOW_HEIGHT - GameConstants.PLAYER_START_HEIGHT_OFFSET));
             energyBarTexture = Content.Load<Texture2D>("energy");
 
             fallingParticleTexture = Content.Load<Texture2D>("fallingparticle");
@@ -232,8 +232,6 @@ namespace Run4Fun
                 spawnAndRemoveTiles();
             }
 
-
-
             // Increase tile spawn frequency.
             thirtySecondTimer += (int)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (thirtySecondTimer >= 30000)
@@ -346,7 +344,9 @@ namespace Run4Fun
                 }
                 else if (message != null && message.MailboxTitle == "Color")
                 {
-                    if (colorEventEnabled && colorForEnergy == message.ValueAsNumber)
+                    int color = (int)message.ValueAsNumber;
+                    Console.WriteLine(color);
+                    if (colorEventEnabled && colorForEnergy == color)
                     {
                         addEnergyAndScoreAndUpdate();
                     }
@@ -538,7 +538,7 @@ namespace Run4Fun
         /// </summary>
         private void checkForCollision()
         {
-            if (!GameConstants.collisionEnabled || dashEnabled)
+            if (!GameConstants.COLLISION_ENABLED || dashEnabled)
             {
                 return;
             }
@@ -555,9 +555,10 @@ namespace Run4Fun
                 }
             }
         }
-
+    
         private void putEV3InOriginalPosition()
         {
+          //  readEV3MessageAndDoAction();
             while (currentLane != (int)lanePlayer.LANE_3_GREEN)
             {
                 if (currentLane > (int)lanePlayer.LANE_3_GREEN)
@@ -576,7 +577,6 @@ namespace Run4Fun
         private void startPlayingGameSong()
         {
             MediaPlayer.Play(gameSong);
-            MediaPlayer.Volume = 0.2f;
         }
 
         /// <summary>
@@ -750,7 +750,8 @@ namespace Run4Fun
                     color = Color.Green;
                     break;
                 case 4:
-                    color = Color.Yellow;
+                    //color = Color.Yellow;
+                    color = Color.DarkOrange;
                     break;
                 case 5:
                     color = Color.Red;
@@ -912,34 +913,34 @@ namespace Run4Fun
             spriteBatch.Draw(backgroundImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height), Color.White);
 
             // Draw score.
-            spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.colorText);
-            spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.colorTextNumber);
+            spriteBatch.DrawString(font, "SCORE: ", new Vector2(1600, 300), GameConstants.TEXT_COLOR);
+            spriteBatch.DrawString(font, score.ToString(), new Vector2(1600, 350), GameConstants.NUMBER_COLOR);
 
             // Draw current level.
-            spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.colorText);
-            spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
+            spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.TEXT_COLOR);
+            spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.NUMBER_COLOR);
 
             // Draw energy and energy bar.
-            spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.colorText);
-            spriteBatch.DrawString(hugefont, energyAmount.ToString(), new Vector2(10, 400), GameConstants.colorTextNumber);
+            spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.TEXT_COLOR);
+            spriteBatch.DrawString(hugefont, energyAmount.ToString(), new Vector2(10, 400), GameConstants.NUMBER_COLOR);
             spriteBatch.Draw(energyBarTexture, energyRectangle, Color.White);
 
             // If energy amount is 100 or above, show "MAX ENERGY".
             if (energyAmount >= 100)
             {
-                spriteBatch.DrawString(font, "MAX ENERGY", new Vector2(10, 570), GameConstants.colorText);
+                spriteBatch.DrawString(font, "MAX ENERGY", new Vector2(10, 570), GameConstants.TEXT_COLOR);
             }
 
             // Draw tiles.
             foreach (Tile tile in tiles)
             {
-                spriteBatch.Draw(tile.image, tile.position, GameConstants.colorTile);
+                spriteBatch.Draw(tile.image, tile.position, GameConstants.TILE_COLOR);
             }
 
             // Draw player.
-            if (GameConstants.drawPlayerEnabled)
+            if (GameConstants.DRAW_PLAYER_ENABLED)
             {
-                spriteBatch.Draw(player.image, player.position, GameConstants.colorPlayer);
+                spriteBatch.Draw(player.image, player.position, GameConstants.PLAYER_COLOR);
             }
 
             // Draw particles.
@@ -947,7 +948,7 @@ namespace Run4Fun
             {
                 foreach (FallingParticle particle in particles)
                 {
-                    spriteBatch.Draw(fallingParticleTexture, particle.position, GameConstants.colorParticles);
+                    spriteBatch.Draw(fallingParticleTexture, particle.position, GameConstants.PARTICLE_COLOR);
                 }
             }
 
@@ -965,12 +966,12 @@ namespace Run4Fun
 
             if (gamePaused)
             {
-                drawTextInMiddle("GAME PAUSED", bigfont, 400, GameConstants.colorPause);
+                drawTextInMiddle("GAME PAUSED", bigfont, 400, GameConstants.PAUSE_COLOR);
             }
 
             if (recentlyLeveled)
             {
-                drawTextInMiddle("LEVEL " + level, bigfont, 300, GameConstants.colorLeveled);
+                drawTextInMiddle("LEVEL " + level, bigfont, 300, GameConstants.LEVEL_UP_COLOR);
             }
 
             spriteBatch.End();
@@ -987,6 +988,7 @@ namespace Run4Fun
         protected override void OnExiting(Object sender, EventArgs args)
         {
             base.OnExiting(sender, args);
+            putEV3InOriginalPosition();
             stopPlayingSound();
             new StartForm().ShowDialog();
         }
