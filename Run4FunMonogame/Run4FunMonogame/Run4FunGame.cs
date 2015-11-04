@@ -272,10 +272,6 @@ namespace Run4Fun
         private void updateEnergyBar()
         {
             energyRectangle = new Rectangle(10, 520, energyAmount * 3, 50);
-
-            spriteBatch.Draw(energyBarTexture, new Rectangle(this.Window.ClientBounds.Width / 2 - energyBarTexture.Width / 2,
-                 30, (int)(energyBarTexture.Width * ((double)energyAmount / 100)), 44),
-                 new Rectangle(0, 45, energyBarTexture.Width, 44), Color.Red);
         }
 
         /// <summary>
@@ -922,8 +918,6 @@ namespace Run4Fun
             // Draw current level.
             spriteBatch.DrawString(font, "LEVEL: ", new Vector2(1600, 500), GameConstants.colorText);
             spriteBatch.DrawString(font, level.ToString(), new Vector2(1600, 550), GameConstants.colorTextNumber);
-
-            energyBarTexture.Width = 12;
 
             // Draw energy and energy bar.
             spriteBatch.DrawString(font, "ENERGY: ", new Vector2(10, 350), GameConstants.colorText);
